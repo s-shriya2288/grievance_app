@@ -19,15 +19,15 @@ export default function DashboardPage() {
   const { employee } = useAuth()
   const { grievances } = useGrievances()
 
-  const open = grievances.filter((g) => g.status === 'Submitted' || g.status === 'In Review').length
-  const resolved = grievances.filter((g) => g.status === 'Resolved').length
-  const highPriority = grievances.filter((g) => g.priority === 'High').length
+  const open = grievances.filter((g) => g.status === 'Open' || g.status === 'In Progress').length
+  const closedOut = grievances.filter((g) => g.status === 'Resolved' || g.status === 'Closed').length
+  const criticalOrHigh = grievances.filter((g) => g.priority === 'Critical' || g.priority === 'High').length
 
   const stats = [
     { label: 'Total Grievances', value: grievances.length },
-    { label: 'Open', value: open },
-    { label: 'Resolved', value: resolved },
-    { label: 'High Priority', value: highPriority },
+    { label: 'Open / In Progress', value: open },
+    { label: 'Resolved / Closed', value: closedOut },
+    { label: 'Critical / High Priority', value: criticalOrHigh },
   ]
 
   return (

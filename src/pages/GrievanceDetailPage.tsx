@@ -1,8 +1,74 @@
+import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { useGrievances } from '../context/GrievanceContext'
 import { PriorityBadge, StatusBadge } from '../components/StatusBadge'
-import { formatDateTime } from '../utils/format'
+import { formatDate, formatDateTime } from '../utils/format'
+
+function Field({ label, value }: { label: string; value: string }) {
+  if (!value) return null
+  return (
+    <div>
+      <p className="text-xs text-slate-400">{label}</p>
+      <p className="mt-0.5 text-sm font-medium text-slate-800">{value}</p>
+    </div>
+  )
+}
+
+function FeedbackForm({ grievanceId }: { grievanceId: string }) {
+  const { submitFeedback } = useGrievances()
+  const [rating, setRating] = useState(5)
+  const [feedback, setFeedback] = useState('')
+  const [done, setDone] = useState(false)
+
+  const handleSubmit = () => {
+    submitFeedback(grievanceId, feedback.trim(), rating)
+    setDone(true)
+  }
+
+  if (done) return null
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-xl border border-brand-200 bg-brand-50/40 p-6"
+    >
+      <h2 className="font-semibold text-slate-900">Rate this resolution</h2>
+      <p className="mt-1 text-sm text-slate-500">Your feedback closes out this grievance.</p>
+
+      <div className="mt-4 flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            onClick={() => setRating(star)}
+            className={`text-2xl leading-none transition-colors ${star <= rating ? 'text-accent-orange' : 'text-slate-300'}`}
+            aria-label={`Rate ${star} stars`}
+          >
+            ★
+          </button>
+        ))}
+      </div>
+
+      <textarea
+        value={feedback}
+        onChange={(e) => setFeedback(e.target.value)}
+        rows={3}
+        placeholder="Any comments on how this was resolved?"
+        className="mt-3 w-full resize-none rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+      />
+
+      <button
+        type="button"
+        onClick={handleSubmit}
+        className="mt-3 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+      >
+        Submit Feedback &amp; Close
+      </button>
+    </motion.div>
+  )
+}
 
 export default function GrievanceDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -27,7 +93,9 @@ export default function GrievanceDetailPage() {
       >
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
           <div>
-            <p className="text-xs text-slate-400">{grievance.id} · {grievance.category}</p>
+            <p className="text-xs text-slate-400">
+              {grievance.id} · {grievance.category} · {grievance.subCategory}
+            </p>
             <h1 className="mt-1 text-xl font-semibold text-slate-900">{grievance.subject}</h1>
           </div>
           <StatusBadge status={grievance.status} />
@@ -35,16 +103,64 @@ export default function GrievanceDetailPage() {
 
         <div className="mt-4 flex flex-wrap items-center gap-4">
           <PriorityBadge priority={grievance.priority} />
+          <span className="text-xs text-slate-400">Incident on {formatDate(grievance.dateOfIncident)}</span>
           <span className="text-xs text-slate-400">Submitted {formatDateTime(grievance.createdAt)}</span>
-          {grievance.isAnonymous && (
+          {grievance.isConfidential && (
             <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
-              Submitted anonymously
+              Confidential submission
             </span>
           )}
         </div>
 
         <p className="mt-5 whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{grievance.description}</p>
+
+        {grievance.aiPriorityReasoning && (
+          <div className="mt-5 rounded-lg border border-brand-100 bg-brand-50/50 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">AI Priority Assessment</p>
+            <p className="mt-1 text-sm text-slate-600">{grievance.aiPriorityReasoning}</p>
+          </div>
+        )}
+
+        <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-100 pt-5 sm:grid-cols-3">
+          <Field label="Employee" value={`${grievance.employeeName} (${grievance.employeeId})`} />
+          <Field label="Department" value={grievance.department} />
+          <Field label="Unit / Location" value={grievance.unitLocation} />
+          <Field label="Reporting Manager" value={grievance.reportingManager} />
+          <Field label="Persons Involved" value={grievance.personsInvolved} />
+          <Field label="Assigned To" value={grievance.assignedTo} />
+          <Field label="Preferred Resolution" value={grievance.preferredResolution} />
+        </div>
+
+        {grievance.attachments.length > 0 && (
+          <div className="mt-5 border-t border-slate-100 pt-5">
+            <p className="text-xs text-slate-400">Attachments</p>
+            <ul className="mt-1 space-y-1">
+              {grievance.attachments.map((file) => (
+                <li key={file.name} className="text-sm font-medium text-slate-700">
+                  📎 {file.name} <span className="font-normal text-slate-400">({(file.size / 1024).toFixed(0)} KB)</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {grievance.resolutionRemarks && (
+          <div className="mt-5 border-t border-slate-100 pt-5">
+            <p className="text-xs text-slate-400">Resolution Remarks</p>
+            <p className="mt-1 text-sm text-slate-700">{grievance.resolutionRemarks}</p>
+          </div>
+        )}
+
+        {grievance.closureRating !== null && (
+          <div className="mt-5 border-t border-slate-100 pt-5">
+            <p className="text-xs text-slate-400">Your Feedback</p>
+            <p className="mt-1 text-sm text-accent-orange">{'★'.repeat(grievance.closureRating)}{'☆'.repeat(5 - grievance.closureRating)}</p>
+            {grievance.employeeFeedback && <p className="mt-1 text-sm text-slate-700">{grievance.employeeFeedback}</p>}
+          </div>
+        )}
       </motion.div>
+
+      {grievance.status === 'Resolved' && <FeedbackForm grievanceId={grievance.id} />}
 
       <motion.div
         initial={{ opacity: 0, y: 8 }}

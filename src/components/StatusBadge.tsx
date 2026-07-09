@@ -1,10 +1,10 @@
 import type { GrievancePriority, GrievanceStatus } from '../types'
 
 const statusStyles: Record<GrievanceStatus, string> = {
-  Submitted: 'bg-slate-100 text-slate-700 ring-slate-200',
-  'In Review': 'bg-amber-100 text-amber-800 ring-amber-200',
-  Resolved: 'bg-emerald-100 text-emerald-800 ring-emerald-200',
-  Rejected: 'bg-rose-100 text-rose-700 ring-rose-200',
+  Open: 'bg-slate-100 text-slate-700 ring-slate-200',
+  'In Progress': 'bg-accent-orange-light text-amber-800 ring-amber-200',
+  Resolved: 'bg-accent-green-light text-emerald-800 ring-emerald-200',
+  Closed: 'bg-brand-50 text-brand-700 ring-brand-100',
 }
 
 export function StatusBadge({ status }: { status: GrievanceStatus }) {
@@ -20,7 +20,8 @@ export function StatusBadge({ status }: { status: GrievanceStatus }) {
 const priorityStyles: Record<GrievancePriority, string> = {
   Low: 'text-slate-500',
   Medium: 'text-amber-600',
-  High: 'text-rose-600',
+  High: 'text-accent-orange',
+  Critical: 'text-rose-600',
 }
 
 export function PriorityBadge({ priority }: { priority: GrievancePriority }) {

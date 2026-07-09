@@ -18,6 +18,8 @@ export default function ProfilePage() {
     { label: 'Employee Code', value: employee.employeeCode },
     { label: 'Department', value: employee.department },
     { label: 'Designation', value: employee.designation },
+    { label: 'Unit / Location', value: employee.unitLocation },
+    { label: 'Reporting Manager', value: employee.reportingManager },
     { label: 'Email', value: employee.email },
     { label: 'Joined On', value: formatDate(employee.joinedOn) },
   ]

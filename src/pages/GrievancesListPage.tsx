@@ -6,10 +6,10 @@ import { PriorityBadge, StatusBadge } from '../components/StatusBadge'
 import { formatDate } from '../utils/format'
 import type { GrievanceStatus } from '../types'
 
-const filters: Array<GrievanceStatus | 'All'> = ['All', 'Submitted', 'In Review', 'Resolved', 'Rejected']
+const filters: Array<GrievanceStatus | 'All'> = ['All', 'Open', 'In Progress', 'Resolved', 'Closed']
 
 export default function GrievancesListPage() {
-  const { grievances } = useGrievances()
+  const { grievances, reprioritizeAll, isReprioritizing } = useGrievances()
   const [activeFilter, setActiveFilter] = useState<GrievanceStatus | 'All'>('All')
 
   const filtered = useMemo(
@@ -24,12 +24,22 @@ export default function GrievancesListPage() {
           <h1 className="text-2xl font-semibold text-slate-900">My Grievances</h1>
           <p className="mt-1 text-sm text-slate-500">Track the status of grievances you've submitted.</p>
         </div>
-        <Link
-          to="/grievances/new"
-          className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-        >
-          + Submit New Grievance
-        </Link>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => reprioritizeAll()}
+            disabled={isReprioritizing}
+            className="inline-flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isReprioritizing ? 'Re-analyzing…' : '↻ Re-run AI Prioritization'}
+          </button>
+          <Link
+            to="/grievances/new"
+            className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+          >
+            + Submit New Grievance
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -68,12 +78,15 @@ export default function GrievancesListPage() {
                     <span>{grievance.id}</span>
                     <span>·</span>
                     <span>{grievance.category}</span>
+                    <span>·</span>
+                    <span>{grievance.subCategory}</span>
                   </div>
                   <p className="mt-1 font-medium text-slate-900">{grievance.subject}</p>
                   <p className="mt-1 line-clamp-1 text-sm text-slate-500">{grievance.description}</p>
                   <div className="mt-3 flex flex-wrap items-center gap-3">
                     <PriorityBadge priority={grievance.priority} />
                     <span className="text-xs text-slate-400">Submitted {formatDate(grievance.createdAt)}</span>
+                    <span className="text-xs text-slate-400">Assigned to {grievance.assignedTo}</span>
                   </div>
                 </div>
                 <StatusBadge status={grievance.status} />

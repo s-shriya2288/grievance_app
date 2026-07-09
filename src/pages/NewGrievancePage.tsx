@@ -19,7 +19,7 @@ export default function NewGrievancePage() {
   const [subCategory, setSubCategory] = useState(GRIEVANCE_SUBCATEGORIES[GRIEVANCE_CATEGORIES[0]][0])
   const [subject, setSubject] = useState('')
   const [description, setDescription] = useState('')
-  const [dateOfIncident, setDateOfIncident] = useState(() => new Date().toISOString().slice(0, 10))
+  const [dateOfIncident, setDateOfIncident] = useState('')
   const [personsInvolved, setPersonsInvolved] = useState('')
   const [attachments, setAttachments] = useState<GrievanceAttachment[]>([])
   const [isConfidential, setIsConfidential] = useState(false)
@@ -46,8 +46,7 @@ export default function NewGrievancePage() {
     const next: Record<string, string> = {}
     if (subject.trim().length < 5) next.subject = 'Subject must be at least 5 characters.'
     if (description.trim().length < 20) next.description = 'Please provide at least 20 characters of detail.'
-    if (!dateOfIncident) next.dateOfIncident = 'Date of incident is required.'
-    else if (dateOfIncident > today) next.dateOfIncident = 'Date of incident cannot be in the future.'
+    if (dateOfIncident && dateOfIncident > today) next.dateOfIncident = 'Date of incident cannot be in the future.'
     setErrors(next)
     return Object.keys(next).length === 0
   }
@@ -194,7 +193,7 @@ export default function NewGrievancePage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="dateOfIncident" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Date of Incident
+              Date of Incident <span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>
             </label>
             <input
               id="dateOfIncident"

@@ -106,7 +106,9 @@ export default function GrievanceDetailPage() {
 
         <div className="mt-4 flex flex-wrap items-center gap-4">
           <PriorityBadge priority={grievance.priority} />
-          <span className="text-xs text-slate-400 dark:text-slate-500">Incident on {formatDate(grievance.dateOfIncident)}</span>
+          {grievance.dateOfIncident && (
+            <span className="text-xs text-slate-400 dark:text-slate-500">Incident on {formatDate(grievance.dateOfIncident)}</span>
+          )}
           <span className="text-xs text-slate-400 dark:text-slate-500">Submitted {formatDateTime(grievance.createdAt)}</span>
           {grievance.isConfidential && (
             <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">

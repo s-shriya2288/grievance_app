@@ -7,6 +7,9 @@ import { prioritizeGrievance } from '../api/prioritize'
 import { GRIEVANCE_CATEGORIES, GRIEVANCE_SUBCATEGORIES } from '../types'
 import type { GrievanceAttachment, GrievanceCategory } from '../types'
 
+const inputClass =
+  'w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/20'
+
 export default function NewGrievancePage() {
   const { employee } = useAuth()
   const { addGrievance } = useGrievances()
@@ -89,49 +92,49 @@ export default function NewGrievancePage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Submit a Grievance</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Submit a Grievance</h1>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           Provide as much detail as possible. Our AI triage assistant will review the details and assign a
           priority automatically — you don't need to set one yourself.
         </p>
       </div>
 
       {employee && (
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-xl border border-slate-200 bg-white p-4 text-sm sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-xl border border-slate-200 bg-white p-4 text-sm dark:border-slate-800 dark:bg-slate-900 sm:grid-cols-3">
           <div>
-            <p className="text-xs text-slate-400">Employee ID</p>
-            <p className="font-medium text-slate-800">{employee.employeeCode}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Employee ID</p>
+            <p className="font-medium text-slate-800 dark:text-slate-200">{employee.employeeCode}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-400">Name</p>
-            <p className="font-medium text-slate-800">{employee.name}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Name</p>
+            <p className="font-medium text-slate-800 dark:text-slate-200">{employee.name}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-400">Department</p>
-            <p className="font-medium text-slate-800">{employee.department}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Department</p>
+            <p className="font-medium text-slate-800 dark:text-slate-200">{employee.department}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-400">Unit / Location</p>
-            <p className="font-medium text-slate-800">{employee.unitLocation}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Unit / Location</p>
+            <p className="font-medium text-slate-800 dark:text-slate-200">{employee.unitLocation}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-400">Reporting Manager</p>
-            <p className="font-medium text-slate-800">{employee.reportingManager}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Reporting Manager</p>
+            <p className="font-medium text-slate-800 dark:text-slate-200">{employee.reportingManager}</p>
           </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5 rounded-xl border border-slate-200 bg-white p-6">
+      <form onSubmit={handleSubmit} className="space-y-5 rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="category" className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label htmlFor="category" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Grievance Category
             </label>
             <select
               id="category"
               value={category}
               onChange={(e) => handleCategoryChange(e.target.value as GrievanceCategory)}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+              className={inputClass}
             >
               {GRIEVANCE_CATEGORIES.map((c) => (
                 <option key={c} value={c}>
@@ -141,14 +144,14 @@ export default function NewGrievancePage() {
             </select>
           </div>
           <div>
-            <label htmlFor="subCategory" className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label htmlFor="subCategory" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Sub-category
             </label>
             <select
               id="subCategory"
               value={subCategory}
               onChange={(e) => setSubCategory(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+              className={inputClass}
             >
               {subCategoryOptions.map((s) => (
                 <option key={s} value={s}>
@@ -160,7 +163,7 @@ export default function NewGrievancePage() {
         </div>
 
         <div>
-          <label htmlFor="subject" className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label htmlFor="subject" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
             Subject
           </label>
           <input
@@ -168,13 +171,13 @@ export default function NewGrievancePage() {
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Brief summary of the issue"
-            className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+            className={inputClass}
           />
-          {errors.subject && <p className="mt-1 text-xs text-rose-600">{errors.subject}</p>}
+          {errors.subject && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.subject}</p>}
         </div>
 
         <div>
-          <label htmlFor="description" className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label htmlFor="description" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
             Detailed Description
           </label>
           <textarea
@@ -183,14 +186,14 @@ export default function NewGrievancePage() {
             onChange={(e) => setDescription(e.target.value)}
             rows={5}
             placeholder="Describe what happened, when, and who was involved..."
-            className="w-full resize-none rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+            className={`resize-none ${inputClass}`}
           />
-          {errors.description && <p className="mt-1 text-xs text-rose-600">{errors.description}</p>}
+          {errors.description && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.description}</p>}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="dateOfIncident" className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label htmlFor="dateOfIncident" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Date of Incident
             </label>
             <input
@@ -199,37 +202,37 @@ export default function NewGrievancePage() {
               value={dateOfIncident}
               max={today}
               onChange={(e) => setDateOfIncident(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+              className={inputClass}
             />
-            {errors.dateOfIncident && <p className="mt-1 text-xs text-rose-600">{errors.dateOfIncident}</p>}
+            {errors.dateOfIncident && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.dateOfIncident}</p>}
           </div>
           <div>
-            <label htmlFor="personsInvolved" className="mb-1.5 block text-sm font-medium text-slate-700">
-              Persons Involved <span className="font-normal text-slate-400">(optional)</span>
+            <label htmlFor="personsInvolved" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Persons Involved <span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>
             </label>
             <input
               id="personsInvolved"
               value={personsInvolved}
               onChange={(e) => setPersonsInvolved(e.target.value)}
               placeholder="Names / roles, if applicable"
-              className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+              className={inputClass}
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="attachments" className="mb-1.5 block text-sm font-medium text-slate-700">
-            Supporting Documents / Attachments <span className="font-normal text-slate-400">(optional)</span>
+          <label htmlFor="attachments" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            Supporting Documents / Attachments <span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>
           </label>
           <input
             id="attachments"
             type="file"
             multiple
             onChange={handleFileChange}
-            className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-3.5 file:py-2 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100"
+            className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-3.5 file:py-2 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100 dark:text-slate-400 dark:file:bg-brand-500/15 dark:file:text-brand-300 dark:hover:file:bg-brand-500/25"
           />
           {attachments.length > 0 && (
-            <ul className="mt-2 space-y-1 text-xs text-slate-500">
+            <ul className="mt-2 space-y-1 text-xs text-slate-500 dark:text-slate-400">
               {attachments.map((file) => (
                 <li key={file.name}>
                   {file.name} · {(file.size / 1024).toFixed(0)} KB
@@ -240,8 +243,8 @@ export default function NewGrievancePage() {
         </div>
 
         <div>
-          <label htmlFor="preferredResolution" className="mb-1.5 block text-sm font-medium text-slate-700">
-            Preferred Resolution <span className="font-normal text-slate-400">(optional)</span>
+          <label htmlFor="preferredResolution" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            Preferred Resolution <span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>
           </label>
           <textarea
             id="preferredResolution"
@@ -249,20 +252,20 @@ export default function NewGrievancePage() {
             onChange={(e) => setPreferredResolution(e.target.value)}
             rows={3}
             placeholder="What outcome would resolve this for you?"
-            className="w-full resize-none rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+            className={`resize-none ${inputClass}`}
           />
         </div>
 
         <fieldset>
-          <legend className="mb-1.5 text-sm font-medium text-slate-700">Confidential Submission</legend>
-          <div className="flex gap-4 text-sm text-slate-600">
+          <legend className="mb-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">Confidential Submission</legend>
+          <div className="flex gap-4 text-sm text-slate-600 dark:text-slate-300">
             <label className="flex items-center gap-2">
               <input
                 type="radio"
                 name="confidential"
                 checked={!isConfidential}
                 onChange={() => setIsConfidential(false)}
-                className="h-4 w-4 border-slate-300 text-brand-600 focus:ring-brand-500"
+                className="h-4 w-4 border-slate-300 text-brand-600 focus:ring-brand-500 dark:border-slate-600"
               />
               No
             </label>
@@ -272,7 +275,7 @@ export default function NewGrievancePage() {
                 name="confidential"
                 checked={isConfidential}
                 onChange={() => setIsConfidential(true)}
-                className="h-4 w-4 border-slate-300 text-brand-600 focus:ring-brand-500"
+                className="h-4 w-4 border-slate-300 text-brand-600 focus:ring-brand-500 dark:border-slate-600"
               />
               Yes, keep my identity confidential
             </label>
@@ -280,7 +283,7 @@ export default function NewGrievancePage() {
         </fieldset>
 
         {phase === 'error' && (
-          <p className="text-sm text-rose-600">
+          <p className="text-sm text-rose-600 dark:text-rose-400">
             Something went wrong reaching the AI triage service. Please try submitting again.
           </p>
         )}
@@ -308,7 +311,7 @@ export default function NewGrievancePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800"
+            className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
           >
             Grievance <span className="font-semibold">{submitted}</span> submitted and prioritized by AI.
             Redirecting to the detail page…

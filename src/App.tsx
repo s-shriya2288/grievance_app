@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { ThemeProvider } from './context/ThemeContext'
 import { AuthProvider } from './context/AuthContext'
 import { GrievanceProvider } from './context/GrievanceContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -14,28 +15,30 @@ import NotFoundPage from './pages/NotFoundPage'
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <GrievanceProvider>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/grievances" element={<GrievancesListPage />} />
-              <Route path="/grievances/new" element={<NewGrievancePage />} />
-              <Route path="/grievances/:id" element={<GrievanceDetailPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-            </Route>
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </GrievanceProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <GrievanceProvider>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/grievances" element={<GrievancesListPage />} />
+                <Route path="/grievances/new" element={<NewGrievancePage />} />
+                <Route path="/grievances/:id" element={<GrievanceDetailPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+              </Route>
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </GrievanceProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   )
 }

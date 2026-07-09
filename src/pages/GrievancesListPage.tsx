@@ -21,15 +21,15 @@ export default function GrievancesListPage() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">My Grievances</h1>
-          <p className="mt-1 text-sm text-slate-500">Track the status of grievances you've submitted.</p>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">My Grievances</h1>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Track the status of grievances you've submitted.</p>
         </div>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => reprioritizeAll()}
             disabled={isReprioritizing}
-            className="inline-flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-100 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-brand-300 dark:hover:bg-brand-500/20"
           >
             {isReprioritizing ? 'Re-analyzing…' : '↻ Re-run AI Prioritization'}
           </button>
@@ -51,7 +51,7 @@ export default function GrievancesListPage() {
             className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
               activeFilter === filter
                 ? 'bg-brand-600 text-white'
-                : 'bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50'
+                : 'bg-white text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-400 dark:ring-slate-700 dark:hover:bg-slate-800'
             }`}
           >
             {filter}
@@ -70,23 +70,23 @@ export default function GrievancesListPage() {
           >
             <Link
               to={`/grievances/${grievance.id}`}
-              className="block rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-brand-200 hover:bg-brand-50/30"
+              className="block rounded-xl border border-slate-200 bg-white p-5 transition-colors hover:border-brand-200 hover:bg-brand-50/30 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-500/40 dark:hover:bg-brand-500/5"
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
                     <span>{grievance.id}</span>
                     <span>·</span>
                     <span>{grievance.category}</span>
                     <span>·</span>
                     <span>{grievance.subCategory}</span>
                   </div>
-                  <p className="mt-1 font-medium text-slate-900">{grievance.subject}</p>
-                  <p className="mt-1 line-clamp-1 text-sm text-slate-500">{grievance.description}</p>
+                  <p className="mt-1 font-medium text-slate-900 dark:text-slate-100">{grievance.subject}</p>
+                  <p className="mt-1 line-clamp-1 text-sm text-slate-500 dark:text-slate-400">{grievance.description}</p>
                   <div className="mt-3 flex flex-wrap items-center gap-3">
                     <PriorityBadge priority={grievance.priority} />
-                    <span className="text-xs text-slate-400">Submitted {formatDate(grievance.createdAt)}</span>
-                    <span className="text-xs text-slate-400">Assigned to {grievance.assignedTo}</span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500">Submitted {formatDate(grievance.createdAt)}</span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500">Assigned to {grievance.assignedTo}</span>
                   </div>
                 </div>
                 <StatusBadge status={grievance.status} />
@@ -96,8 +96,8 @@ export default function GrievancesListPage() {
         ))}
 
         {filtered.length === 0 && (
-          <div className="rounded-xl border border-dashed border-slate-300 bg-white py-16 text-center">
-            <p className="text-sm text-slate-500">No grievances match this filter.</p>
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white py-16 text-center dark:border-slate-700 dark:bg-slate-900">
+            <p className="text-sm text-slate-500 dark:text-slate-400">No grievances match this filter.</p>
           </div>
         )}
       </div>

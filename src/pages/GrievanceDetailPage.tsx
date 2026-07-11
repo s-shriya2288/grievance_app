@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { useGrievances } from '../context/GrievanceContext'
 import { PriorityBadge, StatusBadge } from '../components/StatusBadge'
+import CategoryChip from '../components/CategoryChip'
 import { formatDate, formatDateTime } from '../utils/format'
 
 function Field({ label, value }: { label: string; value: string }) {
@@ -96,10 +97,13 @@ export default function GrievanceDetailPage() {
       >
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
           <div>
-            <p className="text-xs text-slate-400 dark:text-slate-500">
-              {grievance.id} · {grievance.category} · {grievance.subCategory}
-            </p>
-            <h1 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">{grievance.subject}</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <CategoryChip category={grievance.category} />
+              <span className="text-xs text-slate-400 dark:text-slate-500">
+                {grievance.id} · {grievance.subCategory}
+              </span>
+            </div>
+            <h1 className="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">{grievance.subject}</h1>
           </div>
           <StatusBadge status={grievance.status} />
         </div>

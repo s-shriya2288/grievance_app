@@ -3,7 +3,17 @@ import { motion } from 'motion/react'
 import { useAuth } from '../context/AuthContext'
 import { useGrievances } from '../context/GrievanceContext'
 import { StatusBadge } from '../components/StatusBadge'
+import CategoryChip from '../components/CategoryChip'
 import { timeAgo } from '../utils/format'
+
+const accentClasses = {
+  brand: 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300',
+  orange: 'bg-accent-orange-light text-orange-700 dark:bg-orange-500/15 dark:text-orange-300',
+  green: 'bg-accent-green-light text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
+  rose: 'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300',
+} as const
+
+const accentIcons = { brand: '📋', orange: '⏳', green: '✅', rose: '⚠️' } as const
 
 const container = {
   hidden: { opacity: 0 },
@@ -24,10 +34,10 @@ export default function DashboardPage() {
   const criticalOrHigh = grievances.filter((g) => g.priority === 'Critical' || g.priority === 'High').length
 
   const stats = [
-    { label: 'Total Grievances', value: grievances.length },
-    { label: 'Open / In Progress', value: open },
-    { label: 'Resolved / Closed', value: closedOut },
-    { label: 'Critical / High Priority', value: criticalOrHigh },
+    { label: 'Total Grievances', value: grievances.length, accent: 'brand' as const },
+    { label: 'Open / In Progress', value: open, accent: 'orange' as const },
+    { label: 'Resolved / Closed', value: closedOut, accent: 'green' as const },
+    { label: 'Critical / High Priority', value: criticalOrHigh, accent: 'rose' as const },
   ]
 
   return (
@@ -48,8 +58,13 @@ export default function DashboardPage() {
       <motion.div variants={item} className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((stat) => (
           <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
-            <p className="text-sm text-slate-500 dark:text-slate-400">{stat.label}</p>
-            <p className="mt-2 text-3xl font-semibold text-slate-900 dark:text-slate-100">{stat.value}</p>
+            <div className="flex items-center gap-2">
+              <span className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm ${accentClasses[stat.accent]}`}>
+                {accentIcons[stat.accent]}
+              </span>
+              <p className="text-sm text-slate-500 dark:text-slate-400">{stat.label}</p>
+            </div>
+            <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-slate-100">{stat.value}</p>
           </div>
         ))}
       </motion.div>
@@ -70,9 +85,12 @@ export default function DashboardPage() {
               >
                 <div className="min-w-0">
                   <p className="truncate font-medium text-slate-800 dark:text-slate-200">{grievance.subject}</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500">
-                    {grievance.id} · {grievance.category} · {timeAgo(grievance.updatedAt)}
-                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <CategoryChip category={grievance.category} />
+                    <span className="text-xs text-slate-400 dark:text-slate-500">
+                      {grievance.id} · {timeAgo(grievance.updatedAt)}
+                    </span>
+                  </div>
                 </div>
                 <StatusBadge status={grievance.status} />
               </Link>

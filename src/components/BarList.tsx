@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import type { CountEntry } from '../utils/analytics'
+import { CHART_PALETTE } from '../utils/categoryColor'
 
 export default function BarList({ items, unit = 'complaints' }: { items: CountEntry[]; unit?: string }) {
   const max = Math.max(...items.map((i) => i.count), 1)
@@ -20,7 +21,7 @@ export default function BarList({ items, unit = 'complaints' }: { items: CountEn
               initial={{ width: 0 }}
               animate={{ width: `${(item.count / max) * 100}%` }}
               transition={{ duration: 0.5, delay: index * 0.05, ease: 'easeOut' }}
-              className={`h-full rounded-full ${index === 0 ? 'bg-brand-600' : 'bg-brand-300 dark:bg-brand-500/50'}`}
+              className={`h-full rounded-full ${CHART_PALETTE[index % CHART_PALETTE.length]}`}
             />
           </div>
         </li>

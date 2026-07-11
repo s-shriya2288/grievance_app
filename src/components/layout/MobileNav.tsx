@@ -4,6 +4,7 @@ const navItems = [
   { to: '/dashboard', label: 'Home', icon: '⌂' },
   { to: '/grievances', label: 'Grievances', icon: '☰' },
   { to: '/grievances/new', label: 'Submit', icon: '✎' },
+  { to: '/insights', label: 'Insights', icon: '▦' },
   { to: '/profile', label: 'Profile', icon: '◍' },
 ]
 

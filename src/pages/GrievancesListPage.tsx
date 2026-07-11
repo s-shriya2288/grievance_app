@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { useGrievances } from '../context/GrievanceContext'
 import { PriorityBadge, StatusBadge } from '../components/StatusBadge'
+import CategoryChip from '../components/CategoryChip'
 import { formatDate } from '../utils/format'
 import type { GrievanceStatus } from '../types'
 
@@ -74,14 +75,13 @@ export default function GrievancesListPage() {
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
-                    <span>{grievance.id}</span>
-                    <span>·</span>
-                    <span>{grievance.category}</span>
-                    <span>·</span>
-                    <span>{grievance.subCategory}</span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <CategoryChip category={grievance.category} />
+                    <span className="text-xs text-slate-400 dark:text-slate-500">
+                      {grievance.id} · {grievance.subCategory}
+                    </span>
                   </div>
-                  <p className="mt-1 font-medium text-slate-900 dark:text-slate-100">{grievance.subject}</p>
+                  <p className="mt-2 font-medium text-slate-900 dark:text-slate-100">{grievance.subject}</p>
                   <p className="mt-1 line-clamp-1 text-sm text-slate-500 dark:text-slate-400">{grievance.description}</p>
                   <div className="mt-3 flex flex-wrap items-center gap-3">
                     <PriorityBadge priority={grievance.priority} />

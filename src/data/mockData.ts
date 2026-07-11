@@ -7,7 +7,7 @@ export const demoEmployee: Employee = {
   department: 'Product Engineering',
   designation: 'Senior Frontend Engineer',
   employeeCode: 'ENG-1042',
-  unitLocation: 'Dalmiapuram Unit',
+  unitLocation: 'Rajgangpur Unit',
   reportingManager: 'Amit Kapoor',
   joinedOn: '2022-03-14',
   avatarColor: '#163e91',

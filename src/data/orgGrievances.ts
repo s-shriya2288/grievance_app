@@ -1,12 +1,13 @@
 import type { Grievance, GrievanceCategory, GrievancePriority, GrievanceStatus } from '../types'
 import { GRIEVANCE_SUBCATEGORIES } from '../types'
 
+const UNIT = 'Rajgangpur Unit'
+
 interface OrgSeed {
   id: string
   employeeName: string
   employeeId: string
   department: string
-  unitLocation: string
   category: GrievanceCategory
   priority: GrievancePriority
   status: GrievanceStatus
@@ -54,12 +55,12 @@ function makeGrievance(seed: OrgSeed): Grievance {
     employeeId: seed.employeeId,
     employeeName: seed.employeeName,
     department: seed.department,
-    unitLocation: seed.unitLocation,
+    unitLocation: UNIT,
     reportingManager: 'N/A',
     category: seed.category,
     subCategory,
     subject: `${subCategory} concern raised by ${seed.employeeName.split(' ')[0]}`,
-    description: `Reported issue related to ${seed.category.toLowerCase()} at ${seed.unitLocation}.`,
+    description: `Reported issue related to ${seed.category.toLowerCase()} at ${UNIT}.`,
     dateOfIncident: '',
     personsInvolved: '',
     attachments: [],
@@ -79,51 +80,51 @@ function makeGrievance(seed: OrgSeed): Grievance {
 }
 
 const seeds: OrgSeed[] = [
-  // Dalmiapuram Unit — largest plant, heaviest volume
-  { id: 'ORG-2001', employeeName: 'Ravi Kumar', employeeId: 'DPM-2101', department: 'Production', unitLocation: 'Dalmiapuram Unit', category: 'Safety, Health & Environment (SHE)', priority: 'Critical', status: 'Resolved', daysAgoCreated: 12, daysToResolve: 2 },
-  { id: 'ORG-2002', employeeName: 'Suresh Babu', employeeId: 'DPM-2102', department: 'Production', unitLocation: 'Dalmiapuram Unit', category: 'Attendance & Leave', priority: 'Low', status: 'Closed', daysAgoCreated: 40, daysToResolve: 6 },
-  { id: 'ORG-2003', employeeName: 'Lakshmi Narayan', employeeId: 'DPM-2103', department: 'Production', unitLocation: 'Dalmiapuram Unit', category: 'Payroll', priority: 'High', status: 'Closed', daysAgoCreated: 55, daysToResolve: 9 },
-  { id: 'ORG-2004', employeeName: 'Muthu Kumar', employeeId: 'DPM-2104', department: 'Quality Assurance', unitLocation: 'Dalmiapuram Unit', category: 'HR Policies', priority: 'Medium', status: 'Resolved', daysAgoCreated: 18, daysToResolve: 7 },
-  { id: 'ORG-2005', employeeName: 'Karthik Raja', employeeId: 'DPM-2105', department: 'Production', unitLocation: 'Dalmiapuram Unit', category: 'Facilities & Administration', priority: 'Medium', status: 'Closed', daysAgoCreated: 60, daysToResolve: 10 },
-  { id: 'ORG-2006', employeeName: 'Deepa Rani', employeeId: 'DPM-2106', department: 'Human Resources', unitLocation: 'Dalmiapuram Unit', category: 'Employee Relations', priority: 'High', status: 'In Progress', daysAgoCreated: 5 },
-  { id: 'ORG-2007', employeeName: 'Manikandan S', employeeId: 'DPM-2107', department: 'Production', unitLocation: 'Dalmiapuram Unit', category: 'Compensation & Benefits', priority: 'Medium', status: 'Resolved', daysAgoCreated: 22, daysToResolve: 8 },
-  { id: 'ORG-2008', employeeName: 'Priya Dharshini', employeeId: 'DPM-2108', department: 'Safety & Environment', unitLocation: 'Dalmiapuram Unit', category: 'Safety, Health & Environment (SHE)', priority: 'Critical', status: 'Closed', daysAgoCreated: 70, daysToResolve: 1 },
-  { id: 'ORG-2009', employeeName: 'Arun Prakash', employeeId: 'DPM-2109', department: 'Production', unitLocation: 'Dalmiapuram Unit', category: 'Attendance & Leave', priority: 'Low', status: 'Open', daysAgoCreated: 2 },
-  { id: 'ORG-2010', employeeName: 'Kavitha Suresh', employeeId: 'DPM-2110', department: 'IT', unitLocation: 'Dalmiapuram Unit', category: 'IT & HR Systems', priority: 'Low', status: 'Resolved', daysAgoCreated: 15, daysToResolve: 3 },
-  { id: 'ORG-2011', employeeName: 'Bala Subramanian', employeeId: 'DPM-2111', department: 'Production', unitLocation: 'Dalmiapuram Unit', category: 'Suggestion / Improvement', priority: 'Low', status: 'Closed', daysAgoCreated: 80, daysToResolve: 19 },
-  { id: 'ORG-2012', employeeName: 'Meena Kumari', employeeId: 'DPM-2112', department: 'Finance & Accounts', unitLocation: 'Dalmiapuram Unit', category: 'Payroll', priority: 'Medium', status: 'In Progress', daysAgoCreated: 4 },
+  // Production — largest department on the plant floor
+  { id: 'ORG-3001', employeeName: 'Bikram Nayak', employeeId: 'RJG-3101', department: 'Production', category: 'Safety, Health & Environment (SHE)', priority: 'Critical', status: 'Resolved', daysAgoCreated: 12, daysToResolve: 2 },
+  { id: 'ORG-3002', employeeName: 'Sunita Behera', employeeId: 'RJG-3102', department: 'Production', category: 'Attendance & Leave', priority: 'Low', status: 'Closed', daysAgoCreated: 40, daysToResolve: 6 },
+  { id: 'ORG-3003', employeeName: 'Debasish Patra', employeeId: 'RJG-3103', department: 'Production', category: 'Payroll', priority: 'High', status: 'Closed', daysAgoCreated: 55, daysToResolve: 9 },
+  { id: 'ORG-3004', employeeName: 'Jyoti Ranjan', employeeId: 'RJG-3104', department: 'Production', category: 'Compensation & Benefits', priority: 'Medium', status: 'Resolved', daysAgoCreated: 22, daysToResolve: 8 },
+  { id: 'ORG-3005', employeeName: 'Manoj Sahoo', employeeId: 'RJG-3105', department: 'Production', category: 'Facilities & Administration', priority: 'Medium', status: 'Closed', daysAgoCreated: 60, daysToResolve: 10 },
+  { id: 'ORG-3006', employeeName: 'Pallavi Mishra', employeeId: 'RJG-3106', department: 'Production', category: 'Attendance & Leave', priority: 'Low', status: 'Open', daysAgoCreated: 2 },
+  { id: 'ORG-3007', employeeName: 'Rajesh Pradhan', employeeId: 'RJG-3107', department: 'Production', category: 'Suggestion / Improvement', priority: 'Low', status: 'Closed', daysAgoCreated: 80, daysToResolve: 19 },
+  { id: 'ORG-3008', employeeName: 'Ashok Bhoi', employeeId: 'RJG-3108', department: 'Production', category: 'Employee Relations', priority: 'High', status: 'In Progress', daysAgoCreated: 5 },
 
-  // Kadapa Unit
-  { id: 'ORG-2013', employeeName: 'Venkatesh Reddy', employeeId: 'KDP-2201', department: 'Production', unitLocation: 'Kadapa Unit', category: 'Safety, Health & Environment (SHE)', priority: 'High', status: 'Resolved', daysAgoCreated: 25, daysToResolve: 4 },
-  { id: 'ORG-2014', employeeName: 'Anitha Reddy', employeeId: 'KDP-2202', department: 'Human Resources', unitLocation: 'Kadapa Unit', category: 'HR Policies', priority: 'Low', status: 'Closed', daysAgoCreated: 45, daysToResolve: 5 },
-  { id: 'ORG-2015', employeeName: 'Srinivasa Rao', employeeId: 'KDP-2203', department: 'Production', unitLocation: 'Kadapa Unit', category: 'Compensation & Benefits', priority: 'Medium', status: 'Resolved', daysAgoCreated: 30, daysToResolve: 11 },
-  { id: 'ORG-2016', employeeName: 'Padma Vathi', employeeId: 'KDP-2204', department: 'Quality Assurance', unitLocation: 'Kadapa Unit', category: 'Employee Relations', priority: 'High', status: 'Open', daysAgoCreated: 3 },
-  { id: 'ORG-2017', employeeName: 'Ramesh Chandra', employeeId: 'KDP-2205', department: 'Supply Chain', unitLocation: 'Kadapa Unit', category: 'Facilities & Administration', priority: 'Medium', status: 'Closed', daysAgoCreated: 65, daysToResolve: 8 },
-  { id: 'ORG-2018', employeeName: 'Swathi Reddy', employeeId: 'KDP-2206', department: 'Production', unitLocation: 'Kadapa Unit', category: 'Attendance & Leave', priority: 'Low', status: 'In Progress', daysAgoCreated: 6 },
-  { id: 'ORG-2019', employeeName: 'Naga Raju', employeeId: 'KDP-2207', department: 'Safety & Environment', unitLocation: 'Kadapa Unit', category: 'Safety, Health & Environment (SHE)', priority: 'Critical', status: 'Resolved', daysAgoCreated: 10, daysToResolve: 1 },
-  { id: 'ORG-2020', employeeName: 'Divya Prasanna', employeeId: 'KDP-2208', department: 'IT', unitLocation: 'Kadapa Unit', category: 'IT & HR Systems', priority: 'Medium', status: 'Closed', daysAgoCreated: 50, daysToResolve: 6 },
+  // Maintenance & Engineering
+  { id: 'ORG-3009', employeeName: 'Bibhuti Bhusan', employeeId: 'RJG-3201', department: 'Maintenance & Engineering', category: 'Safety, Health & Environment (SHE)', priority: 'Critical', status: 'Closed', daysAgoCreated: 70, daysToResolve: 1 },
+  { id: 'ORG-3010', employeeName: 'Prasant Kumar Sahu', employeeId: 'RJG-3202', department: 'Maintenance & Engineering', category: 'IT & HR Systems', priority: 'Low', status: 'Resolved', daysAgoCreated: 15, daysToResolve: 3 },
+  { id: 'ORG-3011', employeeName: 'Ranjan Kumar Nayak', employeeId: 'RJG-3203', department: 'Maintenance & Engineering', category: 'Performance Management', priority: 'Medium', status: 'In Progress', daysAgoCreated: 4 },
+  { id: 'ORG-3012', employeeName: 'Satyabrata Jena', employeeId: 'RJG-3204', department: 'Maintenance & Engineering', category: 'Facilities & Administration', priority: 'Medium', status: 'Closed', daysAgoCreated: 48, daysToResolve: 8 },
 
-  // Rajgangpur Unit
-  { id: 'ORG-2021', employeeName: 'Bikram Nayak', employeeId: 'RJG-2301', department: 'Production', unitLocation: 'Rajgangpur Unit', category: 'Payroll', priority: 'High', status: 'Resolved', daysAgoCreated: 28, daysToResolve: 12 },
-  { id: 'ORG-2022', employeeName: 'Sunita Behera', employeeId: 'RJG-2302', department: 'Human Resources', unitLocation: 'Rajgangpur Unit', category: 'Harassment & Misconduct', priority: 'Critical', status: 'Closed', daysAgoCreated: 35, daysToResolve: 3 },
-  { id: 'ORG-2023', employeeName: 'Debasish Patra', employeeId: 'RJG-2303', department: 'Production', unitLocation: 'Rajgangpur Unit', category: 'Medical & Insurance', priority: 'Medium', status: 'Resolved', daysAgoCreated: 20, daysToResolve: 9 },
-  { id: 'ORG-2024', employeeName: 'Jyoti Ranjan', employeeId: 'RJG-2304', department: 'Quality Assurance', unitLocation: 'Rajgangpur Unit', category: 'Welfare & Engagement', priority: 'Low', status: 'Open', daysAgoCreated: 7 },
-  { id: 'ORG-2025', employeeName: 'Manoj Sahoo', employeeId: 'RJG-2305', department: 'Safety & Environment', unitLocation: 'Rajgangpur Unit', category: 'Safety, Health & Environment (SHE)', priority: 'High', status: 'Closed', daysAgoCreated: 58, daysToResolve: 5 },
-  { id: 'ORG-2026', employeeName: 'Pallavi Mishra', employeeId: 'RJG-2306', department: 'Production', unitLocation: 'Rajgangpur Unit', category: 'Attendance & Leave', priority: 'Low', status: 'Resolved', daysAgoCreated: 16, daysToResolve: 4 },
+  // Quality Assurance
+  { id: 'ORG-3013', employeeName: 'Padma Vathi', employeeId: 'RJG-3301', department: 'Quality Assurance', category: 'HR Policies', priority: 'Medium', status: 'Resolved', daysAgoCreated: 18, daysToResolve: 7 },
+  { id: 'ORG-3014', employeeName: 'Srinivasa Rao', employeeId: 'RJG-3302', department: 'Quality Assurance', category: 'Employee Relations', priority: 'High', status: 'Open', daysAgoCreated: 3 },
+  { id: 'ORG-3015', employeeName: 'Rohini Joshi', employeeId: 'RJG-3303', department: 'Quality Assurance', category: 'Performance Management', priority: 'Medium', status: 'Closed', daysAgoCreated: 63, daysToResolve: 14 },
+  { id: 'ORG-3016', employeeName: 'Ganesh Hegde', employeeId: 'RJG-3304', department: 'Quality Assurance', category: 'Welfare & Engagement', priority: 'Low', status: 'Resolved', daysAgoCreated: 16, daysToResolve: 4 },
 
-  // Belgaum Unit
-  { id: 'ORG-2027', employeeName: 'Anand Desai', employeeId: 'BLG-2401', department: 'Production', unitLocation: 'Belgaum Unit', category: 'Compensation & Benefits', priority: 'Medium', status: 'Closed', daysAgoCreated: 42, daysToResolve: 7 },
-  { id: 'ORG-2028', employeeName: 'Shalini Patil', employeeId: 'BLG-2402', department: 'Human Resources', unitLocation: 'Belgaum Unit', category: 'Career & Development', priority: 'Low', status: 'Resolved', daysAgoCreated: 24, daysToResolve: 13 },
-  { id: 'ORG-2029', employeeName: 'Vijay Kulkarni', employeeId: 'BLG-2403', department: 'Supply Chain', unitLocation: 'Belgaum Unit', category: 'Facilities & Administration', priority: 'Medium', status: 'In Progress', daysAgoCreated: 8 },
-  { id: 'ORG-2030', employeeName: 'Rohini Joshi', employeeId: 'BLG-2404', department: 'Quality Assurance', unitLocation: 'Belgaum Unit', category: 'Performance Management', priority: 'Medium', status: 'Closed', daysAgoCreated: 63, daysToResolve: 14 },
-  { id: 'ORG-2031', employeeName: 'Ganesh Hegde', employeeId: 'BLG-2405', department: 'Production', unitLocation: 'Belgaum Unit', category: 'Safety, Health & Environment (SHE)', priority: 'High', status: 'Resolved', daysAgoCreated: 19, daysToResolve: 2 },
+  // Human Resources
+  { id: 'ORG-3017', employeeName: 'Anitha Reddy', employeeId: 'RJG-3401', department: 'Human Resources', category: 'Harassment & Misconduct', priority: 'Critical', status: 'Closed', daysAgoCreated: 35, daysToResolve: 3 },
+  { id: 'ORG-3018', employeeName: 'Deepa Rani', employeeId: 'RJG-3402', department: 'Human Resources', category: 'Career & Development', priority: 'Low', status: 'Resolved', daysAgoCreated: 24, daysToResolve: 13 },
+  { id: 'ORG-3019', employeeName: 'Vikram Singh', employeeId: 'RJG-3403', department: 'Human Resources', category: 'Recruitment & Onboarding', priority: 'Low', status: 'Open', daysAgoCreated: 1 },
+  { id: 'ORG-3020', employeeName: 'Shalini Patil', employeeId: 'RJG-3404', department: 'Human Resources', category: 'Compliance & Ethics', priority: 'Critical', status: 'Closed', daysAgoCreated: 33, daysToResolve: 4 },
 
-  // Corporate Office - Gurugram
-  { id: 'ORG-2032', employeeName: 'Aditi Sharma', employeeId: 'COG-2501', department: 'Product Engineering', unitLocation: 'Corporate Office - Gurugram', category: 'Performance Management', priority: 'Medium', status: 'Resolved', daysAgoCreated: 14, daysToResolve: 6 },
-  { id: 'ORG-2033', employeeName: 'Rahul Mehta', employeeId: 'COG-2502', department: 'Finance & Accounts', unitLocation: 'Corporate Office - Gurugram', category: 'Payroll', priority: 'High', status: 'Closed', daysAgoCreated: 48, daysToResolve: 8 },
-  { id: 'ORG-2034', employeeName: 'Neha Kapoor', employeeId: 'COG-2503', department: 'Sales & Marketing', unitLocation: 'Corporate Office - Gurugram', category: 'Compliance & Ethics', priority: 'Critical', status: 'Closed', daysAgoCreated: 33, daysToResolve: 4 },
-  { id: 'ORG-2035', employeeName: 'Vikram Singh', employeeId: 'COG-2504', department: 'Human Resources', unitLocation: 'Corporate Office - Gurugram', category: 'Recruitment & Onboarding', priority: 'Low', status: 'Open', daysAgoCreated: 1 },
-  { id: 'ORG-2036', employeeName: 'Pooja Verma', employeeId: 'COG-2505', department: 'IT', unitLocation: 'Corporate Office - Gurugram', category: 'IT & HR Systems', priority: 'Medium', status: 'Resolved', daysAgoCreated: 21, daysToResolve: 5 },
+  // Safety & Environment
+  { id: 'ORG-3021', employeeName: 'Naga Raju', employeeId: 'RJG-3501', department: 'Safety & Environment', category: 'Safety, Health & Environment (SHE)', priority: 'Critical', status: 'Resolved', daysAgoCreated: 10, daysToResolve: 1 },
+  { id: 'ORG-3022', employeeName: 'Venkatesh Reddy', employeeId: 'RJG-3502', department: 'Safety & Environment', category: 'Safety, Health & Environment (SHE)', priority: 'High', status: 'Resolved', daysAgoCreated: 25, daysToResolve: 4 },
+  { id: 'ORG-3023', employeeName: 'Anand Desai', employeeId: 'RJG-3503', department: 'Safety & Environment', category: 'Medical & Insurance', priority: 'Medium', status: 'Closed', daysAgoCreated: 42, daysToResolve: 7 },
+
+  // Finance & Accounts
+  { id: 'ORG-3024', employeeName: 'Rahul Mehta', employeeId: 'RJG-3601', department: 'Finance & Accounts', category: 'Payroll', priority: 'High', status: 'Closed', daysAgoCreated: 48, daysToResolve: 8 },
+  { id: 'ORG-3025', employeeName: 'Meena Kumari', employeeId: 'RJG-3602', department: 'Finance & Accounts', category: 'Payroll', priority: 'Medium', status: 'In Progress', daysAgoCreated: 4 },
+  { id: 'ORG-3026', employeeName: 'Neha Kapoor', employeeId: 'RJG-3603', department: 'Finance & Accounts', category: 'Separation & Exit', priority: 'Medium', status: 'Resolved', daysAgoCreated: 20, daysToResolve: 9 },
+
+  // Supply Chain
+  { id: 'ORG-3027', employeeName: 'Ramesh Chandra', employeeId: 'RJG-3701', department: 'Supply Chain', category: 'Facilities & Administration', priority: 'Medium', status: 'Closed', daysAgoCreated: 65, daysToResolve: 8 },
+  { id: 'ORG-3028', employeeName: 'Vijay Kulkarni', employeeId: 'RJG-3702', department: 'Supply Chain', category: 'Facilities & Administration', priority: 'Medium', status: 'In Progress', daysAgoCreated: 8 },
+
+  // IT
+  { id: 'ORG-3029', employeeName: 'Divya Prasanna', employeeId: 'RJG-3801', department: 'IT', category: 'IT & HR Systems', priority: 'Medium', status: 'Closed', daysAgoCreated: 50, daysToResolve: 6 },
+  { id: 'ORG-3030', employeeName: 'Pooja Verma', employeeId: 'RJG-3802', department: 'IT', category: 'IT & HR Systems', priority: 'Low', status: 'Resolved', daysAgoCreated: 21, daysToResolve: 5 },
 ]
 
 export const orgWideGrievances: Grievance[] = seeds.map(makeGrievance)

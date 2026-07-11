@@ -10,6 +10,7 @@ import GrievancesListPage from './pages/GrievancesListPage'
 import GrievanceDetailPage from './pages/GrievanceDetailPage'
 import NewGrievancePage from './pages/NewGrievancePage'
 import ProfilePage from './pages/ProfilePage'
+import InsightsPage from './pages/InsightsPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
                 <Route path="/grievances" element={<GrievancesListPage />} />
                 <Route path="/grievances/new" element={<NewGrievancePage />} />
                 <Route path="/grievances/:id" element={<GrievanceDetailPage />} />
+                <Route path="/insights" element={<InsightsPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
               </Route>
               <Route path="*" element={<NotFoundPage />} />

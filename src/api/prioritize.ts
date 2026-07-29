@@ -17,7 +17,6 @@ export interface PrioritizeRequest {
 export interface PrioritizeResponse {
   priority: GrievancePriority
   reasoning: string
-  suggestedTeam: string
 }
 
 export async function prioritizeGrievance(input: PrioritizeRequest): Promise<PrioritizeResponse> {

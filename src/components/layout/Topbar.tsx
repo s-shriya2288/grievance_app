@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
+import Logo from '../Logo'
 
 export default function Topbar() {
   const { employee, logout } = useAuth()
@@ -24,9 +25,7 @@ export default function Topbar() {
   return (
     <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 md:px-8">
       <div className="flex items-center gap-2 md:hidden">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-sm font-bold text-white">
-          EP
-        </div>
+        <Logo size="sm" />
       </div>
       <div className="hidden text-sm text-slate-500 dark:text-slate-400 md:block">
         Welcome back, <span className="font-medium text-slate-800 dark:text-slate-100">{employee?.name}</span>

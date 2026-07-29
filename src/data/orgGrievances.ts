@@ -1,5 +1,5 @@
 import type { Grievance, GrievanceCategory, GrievancePriority, GrievanceStatus } from '../types'
-import { GRIEVANCE_SUBCATEGORIES } from '../types'
+import { getRoutedDepartment, GRIEVANCE_SUBCATEGORIES } from '../types'
 
 const UNIT = 'Rajgangpur Unit'
 
@@ -49,6 +49,7 @@ function makeGrievance(seed: OrgSeed): Grievance {
   const { timeline, updatedAt } = buildTimeline(seed.status, createdAt, seed.daysToResolve)
   const subCategory = GRIEVANCE_SUBCATEGORIES[seed.category][0]
   const isResolvedOrClosed = seed.status === 'Resolved' || seed.status === 'Closed'
+  const routedDepartment = getRoutedDepartment(seed.category)
 
   return {
     id: seed.id,
@@ -69,7 +70,8 @@ function makeGrievance(seed: OrgSeed): Grievance {
     priority: seed.priority,
     aiPriorityReasoning: '',
     status: seed.status,
-    assignedTo: 'HR Business Partner',
+    routedDepartment,
+    assignedTo: `${routedDepartment} Department`,
     resolutionRemarks: isResolvedOrClosed ? 'Reviewed and addressed by the relevant team.' : '',
     employeeFeedback: '',
     closureRating: null,

@@ -21,12 +21,11 @@ export interface PrioritizeInput {
 export interface PrioritizeResult {
   priority: 'Low' | 'Medium' | 'High' | 'Critical'
   reasoning: string
-  suggestedTeam: string
 }
 
 const ASSIGN_PRIORITY_TOOL: Anthropic.Tool = {
   name: 'assign_priority',
-  description: 'Assign a triage priority, reasoning, and owning team for an employee grievance.',
+  description: 'Assign a triage priority and reasoning for an employee grievance.',
   input_schema: {
     type: 'object',
     properties: {
@@ -40,18 +39,13 @@ const ASSIGN_PRIORITY_TOOL: Anthropic.Tool = {
         type: 'string',
         description: 'One or two sentences explaining the priority assignment, for an HR reviewer.',
       },
-      suggestedTeam: {
-        type: 'string',
-        description:
-          'The HR/ops team best suited to own this grievance, e.g. "Payroll Team", "POSH Committee", "Facilities Team", "IT Support", "HR Business Partner".',
-      },
     },
-    required: ['priority', 'reasoning', 'suggestedTeam'],
+    required: ['priority', 'reasoning'],
   },
 }
 
 function buildPrompt(input: PrioritizeInput) {
-  return `You are an HR grievance triage assistant for an Indian manufacturing company (Dalmia Bharat). Review the following employee grievance and assign a priority.
+  return `You are an HR grievance triage assistant for Dalmia Cement (Bharat) Limited's Rajgangpur Plant. Review the following employee grievance and assign a priority.
 
 Category: ${input.category}
 Sub-category: ${input.subCategory}
@@ -69,7 +63,6 @@ function fallback(input: PrioritizeInput): PrioritizeResult {
   return {
     priority,
     reasoning: 'AI service unavailable — defaulted based on category.',
-    suggestedTeam: 'HR Business Partner',
   }
 }
 
@@ -80,7 +73,7 @@ export async function prioritizeGrievance(input: PrioritizeInput): Promise<Prior
   try {
     const message = await anthropic.messages.create({
       model: MODEL,
-      max_tokens: 400,
+      max_tokens: 300,
       tools: [ASSIGN_PRIORITY_TOOL],
       tool_choice: { type: 'tool', name: 'assign_priority' },
       messages: [{ role: 'user', content: buildPrompt(input) }],

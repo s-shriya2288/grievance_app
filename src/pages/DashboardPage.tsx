@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useGrievances } from '../context/GrievanceContext'
 import { StatusBadge } from '../components/StatusBadge'
 import CategoryChip from '../components/CategoryChip'
+import Logo from '../components/Logo'
 import { timeAgo } from '../utils/format'
 import type { Grievance } from '../types'
 
@@ -58,6 +59,18 @@ export default function DashboardPage() {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
+      <motion.div
+        variants={item}
+        className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
+      >
+        <Logo size="md" />
+        <div className="min-w-0 leading-tight">
+          <p className="truncate font-semibold text-slate-900 dark:text-slate-100">Dalmia Cement (Bharat) Limited</p>
+          <p className="truncate text-sm text-slate-500 dark:text-slate-400">Rajgangpur Plant</p>
+          <p className="truncate text-xs text-slate-400 dark:text-slate-500">Employee Grievance Management Portal</p>
+        </div>
+      </motion.div>
+
       <motion.div variants={item} className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Hi {employee?.name.split(' ')[0]}, welcome back</h1>

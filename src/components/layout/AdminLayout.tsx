@@ -2,6 +2,8 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAdminAuth } from '../../context/AdminAuthContext'
 import { useTheme } from '../../context/ThemeContext'
+import Logo from '../Logo'
+import Footer from '../Footer'
 
 export default function AdminLayout() {
   const { admin, logoutAdmin } = useAdminAuth()
@@ -18,10 +20,11 @@ export default function AdminLayout() {
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 md:flex">
         <div className="flex h-16 items-center gap-2 border-b border-slate-200 px-6 dark:border-slate-800">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-orange text-sm font-bold text-white">
-            HR
+          <Logo size="sm" variant="admin" />
+          <div className="min-w-0 leading-tight">
+            <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">HR Admin Portal</p>
+            <p className="truncate text-xs text-slate-400 dark:text-slate-500">Dalmia Rajgangpur</p>
           </div>
-          <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">HR Admin Portal</span>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
           <NavLink
@@ -51,16 +54,16 @@ export default function AdminLayout() {
           </NavLink>
         </nav>
         <div className="border-t border-slate-200 p-4 text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500">
-          Rajgangpur Unit · HR Analytics
+          Dalmia Cement (Bharat) Limited
+          <br />
+          Rajgangpur Plant
         </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 md:px-8">
           <div className="flex items-center gap-2 md:hidden">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-orange text-sm font-bold text-white">
-              HR
-            </div>
+            <Logo size="sm" variant="admin" />
           </div>
           <div className="hidden text-sm text-slate-500 dark:text-slate-400 md:block">
             <span className="font-medium text-slate-800 dark:text-slate-100">{admin?.name}</span> · {admin?.role}
@@ -92,7 +95,7 @@ export default function AdminLayout() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex flex-1 flex-col overflow-y-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -100,11 +103,12 @@ export default function AdminLayout() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8"
+              className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8 md:py-8"
             >
               <Outlet />
             </motion.div>
           </AnimatePresence>
+          <Footer />
         </main>
       </div>
     </div>

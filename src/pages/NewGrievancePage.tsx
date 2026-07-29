@@ -78,7 +78,6 @@ export default function NewGrievancePage() {
         preferredResolution: preferredResolution.trim(),
         priority: aiResult.priority,
         aiPriorityReasoning: aiResult.reasoning,
-        assignedTo: aiResult.suggestedTeam,
       })
 
       setSubmitted(grievance.id)

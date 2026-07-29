@@ -20,7 +20,7 @@ export default function AdminLayout() {
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 md:flex">
         <div className="flex h-16 items-center gap-2 border-b border-slate-200 px-6 dark:border-slate-800">
-          <Logo size="sm" variant="admin" />
+          <Logo size="sm" />
           <div className="min-w-0 leading-tight">
             <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">HR Admin Portal</p>
             <p className="truncate text-xs text-slate-400 dark:text-slate-500">Dalmia Rajgangpur</p>
@@ -63,7 +63,7 @@ export default function AdminLayout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 md:px-8">
           <div className="flex items-center gap-2 md:hidden">
-            <Logo size="sm" variant="admin" />
+            <Logo size="sm" />
           </div>
           <div className="hidden text-sm text-slate-500 dark:text-slate-400 md:block">
             <span className="font-medium text-slate-800 dark:text-slate-100">{admin?.name}</span> · {admin?.role}

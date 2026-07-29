@@ -2,7 +2,6 @@ import { type FormEvent, useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { useAuth } from '../context/AuthContext'
-import Logo from '../components/Logo'
 import Footer from '../components/Footer'
 
 export default function LoginPage() {
@@ -45,11 +44,8 @@ export default function LoginPage() {
           className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
         >
           <div className="mb-8 flex flex-col items-center text-center">
-            <Logo size="lg" />
-            <h1 className="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
-              Dalmia Cement (Bharat) Limited
-            </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Rajgangpur Plant</p>
+            <img src="/brand/dalmia-logo-full.png" alt="Dalmia Bharat" className="h-auto w-56" />
+            <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Rajgangpur Plant</p>
             <p className="mt-1 text-sm font-medium text-brand-600 dark:text-brand-400">
               Employee Grievance Management Portal
             </p>

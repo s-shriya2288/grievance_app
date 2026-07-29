@@ -2,7 +2,6 @@ import { type FormEvent, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { useAdminAuth } from '../context/AdminAuthContext'
-import Logo from '../components/Logo'
 import Footer from '../components/Footer'
 
 export default function AdminLoginPage() {
@@ -43,9 +42,9 @@ export default function AdminLoginPage() {
           className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
         >
         <div className="mb-8 flex flex-col items-center text-center">
-          <Logo size="lg" variant="admin" />
-          <h1 className="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">HR Admin Portal</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Dalmia Cement (Bharat) Limited — Rajgangpur Plant</p>
+          <img src="/brand/dalmia-logo-full.png" alt="Dalmia Bharat" className="h-auto w-48" />
+          <h1 className="mt-3 text-lg font-semibold text-slate-900 dark:text-slate-100">HR Admin Portal</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Rajgangpur Plant</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

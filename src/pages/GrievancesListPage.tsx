@@ -19,11 +19,16 @@ const filterLabels: Record<GrievanceStatus | 'All', string> = {
 export default function GrievancesListPage() {
   const { grievances, isLoading, error } = useGrievances()
   const [activeFilter, setActiveFilter] = useState<GrievanceStatus | 'All'>('All')
+  const [search, setSearch] = useState('')
 
-  const filtered = useMemo(
-    () => (activeFilter === 'All' ? grievances : grievances.filter((g) => g.status === activeFilter)),
-    [grievances, activeFilter],
-  )
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return grievances.filter((g) => {
+      if (activeFilter !== 'All' && g.status !== activeFilter) return false
+      if (q && !`${g.ticketNumber} ${g.subject} ${g.description}`.toLowerCase().includes(q)) return false
+      return true
+    })
+  }, [grievances, activeFilter, search])
 
   return (
     <div className="space-y-6">
@@ -39,6 +44,13 @@ export default function GrievancesListPage() {
           + Submit New Grievance
         </Link>
       </div>
+
+      <input
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search by ticket number, subject, or description…"
+        className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/20 sm:max-w-md"
+      />
 
       <div className="flex flex-wrap gap-2">
         {filters.map((filter) => (

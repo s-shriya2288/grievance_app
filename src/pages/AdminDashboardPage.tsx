@@ -6,8 +6,9 @@ import { StatusBadge, PriorityBadge } from '../components/StatusBadge'
 import CategoryChip from '../components/CategoryChip'
 import BarList from '../components/BarList'
 import { averageResolutionByGroup, averageResolutionDays, countBy } from '../utils/analytics'
+import { downloadCsv, toCsv } from '../utils/csvExport'
 import { formatDate } from '../utils/format'
-import type { GrievancePriority, GrievanceStatus } from '../types/api'
+import type { Grievance, GrievancePriority, GrievanceStatus } from '../types/api'
 
 const container = {
   hidden: { opacity: 0 },
@@ -88,6 +89,38 @@ export default function AdminDashboardPage() {
     })
   }, [grievances, statusFilter, priorityFilter, search])
 
+  const handleExport = () => {
+    const headers = [
+      'Ticket Number',
+      'Subject',
+      'Category',
+      'Sub-category',
+      'Department',
+      'Employee',
+      'Employee ID',
+      'Priority',
+      'Status',
+      'Submitted',
+      'Resolved',
+      'Assigned To',
+    ]
+    const rows: string[][] = filtered.map((g: Grievance) => [
+      g.ticketNumber,
+      g.subject,
+      g.category.categoryName,
+      g.subcategory.subcategoryName,
+      g.department.departmentName,
+      `${g.employee.firstName} ${g.employee.lastName}`,
+      g.employee.employeeId,
+      g.priority,
+      g.status,
+      formatDate(g.createdAt),
+      g.resolvedAt ? formatDate(g.resolvedAt) : '',
+      g.assignedAdmin ? `${g.assignedAdmin.firstName} ${g.assignedAdmin.lastName}` : '',
+    ])
+    downloadCsv(`grievances-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(headers, rows))
+  }
+
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
       <motion.div variants={item}>
@@ -155,12 +188,22 @@ export default function AdminDashboardPage() {
       <motion.div variants={item} className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="font-semibold text-slate-900 dark:text-slate-100">Grievance Queue</h2>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search ticket, subject, employee…"
-            className="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/20 sm:w-64"
-          />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search ticket, subject, employee…"
+              className="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/20 sm:w-64"
+            />
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={filtered.length === 0}
+              className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              ⬇ Export to Excel
+            </button>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2 px-6 pt-4">
           {statusFilters.map((s) => (

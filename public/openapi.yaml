@@ -14,6 +14,7 @@ tags:
   - name: Grievances
   - name: Notifications
   - name: Admin
+  - name: Uploads
 
 components:
   securitySchemes:
@@ -419,3 +420,22 @@ paths:
       responses:
         '200': { description: List of audit log entries }
         '403': { description: Not authorized (requires Super Admin role) }
+
+  /upload:
+    post:
+      tags: [Uploads]
+      summary: Upload a grievance attachment (PNG/JPEG/WEBP/PDF, max 4 MB), returns a public URL
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [filename, contentType, dataBase64]
+              properties:
+                filename: { type: string }
+                contentType: { type: string, enum: [image/png, image/jpeg, image/webp, application/pdf] }
+                dataBase64: { type: string, description: Base64-encoded file contents }
+      responses:
+        '201': { description: "File stored, returns { url }" }
+        '400': { description: Invalid file type or file too large }
+        '503': { description: Uploads not configured (missing BLOB_READ_WRITE_TOKEN) }

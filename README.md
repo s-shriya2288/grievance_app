@@ -42,7 +42,9 @@ and as an Android app via Capacitor. Includes a separate HR Admin portal for org
   resolution time overall and per department, a filterable grievance queue, and inline
   status/resolution/assignment actions on each grievance's detail page — scoped to the
   Rajgangpur Unit and to the admin's own department (Super Admin sees all departments)
-- Audit log of sensitive actions (`/api/admin/audit-logs`, Super Admin only)
+- Audit log of sensitive actions, viewable in-app under **Admin → Audit Log** (Super Admin only)
+- Export the (filtered) grievance queue to a spreadsheet from the HR Admin dashboard
+- Attach a photo or PDF (up to 4 MB) when submitting a grievance, stored via Vercel Blob
 - Interactive API docs at `/api-docs.html` (Swagger UI, backed by `public/openapi.yaml`)
 
 ## Getting started (web)
@@ -98,6 +100,7 @@ update users set role_id = (select id from roles where name = 'Super Admin') whe
 | `RESEND_API_KEY` | No | Enables real emails (OTP, notifications) via [Resend](https://resend.com/) |
 | `RESEND_FROM_EMAIL` | No | From-address for emails, e.g. `Dalmia Grievance Portal <onboarding@resend.dev>` |
 | `APP_URL` | No | Used in email templates for links/branding, default `http://localhost:5173` |
+| `BLOB_READ_WRITE_TOKEN` | No | Enables grievance attachment uploads via [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) — create a Blob store under a Vercel project's Storage tab to get one |
 | `ANTHROPIC_API_KEY` | No | Enables real AI priority triage via Claude |
 | `ANTHROPIC_MODEL` | No | Default `claude-haiku-4-5-20251001` |
 | `VITE_API_BASE_URL` | No | Only for the Android build — see [Android](#android-capacitor) below |
@@ -114,6 +117,7 @@ UI at `/api-docs.html` once the app is running. Endpoints, all under `/api`:
 - `POST /grievances/:id/comments`, `POST /grievances/:id/satisfaction`, `POST /grievances/:id/reopen`
 - `GET /notifications`, `PATCH /notifications/:id`, `POST /notifications/read-all`
 - `GET /admin/audit-logs` (Super Admin only)
+- `POST /upload` (grievance attachment upload, returns `{ url }`)
 - `POST /prioritize`, `POST /prioritize-batch` (AI triage)
 
 ## Scripts
@@ -144,8 +148,10 @@ Vercel build.
    - `DATABASE_URL` — required. Use your Supabase/Neon **pooled** connection string here
      (Vercel functions are short-lived, so the pooler avoids exhausting connections).
    - `JWT_SECRET` — required.
-   - `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `APP_URL` — optional, same
-     fallback behavior as local dev if omitted.
+   - `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `APP_URL`, `BLOB_READ_WRITE_TOKEN`
+     — optional, same fallback behavior as local dev if omitted. For `BLOB_READ_WRITE_TOKEN`,
+     create a Blob store under the project's **Storage** tab — Vercel adds the token
+     automatically once you connect the store.
 4. Run migrations against the same database once, from your machine:
    ```bash
    DATABASE_URL="<your production connection string>" npm run db:deploy

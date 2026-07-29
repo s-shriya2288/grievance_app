@@ -7,7 +7,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      '/api': 'http://localhost:3001',
+      // Trailing slash matters: '/api-docs.html' must NOT match this proxy
+      // (it's a static file served by Vite, not a backend route).
+      '/api/': 'http://localhost:3001',
     },
   },
 })

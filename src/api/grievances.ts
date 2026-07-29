@@ -10,6 +10,7 @@ export interface CreateGrievanceInput {
   personsInvolved?: string | null
   isConfidential?: boolean
   preferredResolution?: string | null
+  attachment?: string | null
   priority?: GrievancePriority
   aiPriorityReasoning?: string | null
 }

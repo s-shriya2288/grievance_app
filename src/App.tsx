@@ -16,6 +16,7 @@ import GrievanceDetailPage from './pages/GrievanceDetailPage'
 import NewGrievancePage from './pages/NewGrievancePage'
 import ProfilePage from './pages/ProfilePage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
+import AuditLogPage from './pages/AuditLogPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 export default function App() {
@@ -54,6 +55,7 @@ export default function App() {
                 }
               >
                 <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/admin/audit-logs" element={<AuditLogPage />} />
               </Route>
 
               <Route path="*" element={<NotFoundPage />} />

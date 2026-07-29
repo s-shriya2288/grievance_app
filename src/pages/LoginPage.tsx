@@ -2,6 +2,8 @@ import { type FormEvent, useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { useAuth } from '../context/AuthContext'
+import Logo from '../components/Logo'
+import Footer from '../components/Footer'
 
 export default function LoginPage() {
   const { isAuthenticated, login } = useAuth()
@@ -32,22 +34,26 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-brand-50 px-4 dark:from-slate-950 dark:via-slate-900 dark:to-brand-900/40">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-white to-brand-50 dark:from-slate-950 dark:via-slate-900 dark:to-brand-900/40">
       <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-accent-green/20 blur-3xl dark:bg-accent-green/10" />
       <div className="pointer-events-none absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-accent-orange/20 blur-3xl dark:bg-accent-orange/10" />
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
-      >
-        <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-lg font-bold text-white">
-            EP
+      <div className="flex flex-1 items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
+        >
+          <div className="mb-8 flex flex-col items-center text-center">
+            <Logo size="lg" />
+            <h1 className="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">
+              Dalmia Cement (Bharat) Limited
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Rajgangpur Plant</p>
+            <p className="mt-1 text-sm font-medium text-brand-600 dark:text-brand-400">
+              Employee Grievance Management Portal
+            </p>
           </div>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">Employee Portal</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Sign in to manage and track your grievances</p>
-        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -102,13 +108,17 @@ export default function LoginPage() {
         <p className="mt-6 text-center text-xs text-slate-400 dark:text-slate-500">
           Demo portal — any email &amp; password will sign you in.
         </p>
-        <p className="mt-2 text-center text-xs text-slate-400 dark:text-slate-500">
-          HR Admin?{' '}
-          <Link to="/admin/login" className="font-medium text-accent-orange hover:underline">
-            Sign in here
-          </Link>
-        </p>
-      </motion.div>
+          <p className="mt-2 text-center text-xs text-slate-400 dark:text-slate-500">
+            HR Admin?{' '}
+            <Link to="/admin/login" className="font-medium text-accent-orange hover:underline">
+              Sign in here
+            </Link>
+          </p>
+        </motion.div>
+      </div>
+      <div className="relative z-10">
+        <Footer />
+      </div>
     </div>
   )
 }

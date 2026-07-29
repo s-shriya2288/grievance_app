@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
   appId: 'com.dalmiabharat.employeeportal',
-  appName: 'Dalmia Bharat Employee Portal',
+  appName: 'Dalmia Rajgangpur Grievance Portal',
   webDir: 'dist',
 }
 

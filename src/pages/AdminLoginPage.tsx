@@ -2,6 +2,8 @@ import { type FormEvent, useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { useAdminAuth } from '../context/AdminAuthContext'
+import Logo from '../components/Logo'
+import Footer from '../components/Footer'
 
 export default function AdminLoginPage() {
   const { isAdminAuthenticated, loginAdmin } = useAdminAuth()
@@ -30,21 +32,20 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-accent-orange-light/60 px-4 dark:from-slate-950 dark:via-slate-900 dark:to-orange-900/20">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-white to-accent-orange-light/60 dark:from-slate-950 dark:via-slate-900 dark:to-orange-900/20">
       <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-500/15 blur-3xl dark:bg-brand-500/10" />
       <div className="pointer-events-none absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-accent-orange/20 blur-3xl dark:bg-accent-orange/10" />
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
-      >
+      <div className="flex flex-1 items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
+        >
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-accent-orange text-lg font-bold text-white">
-            HR
-          </div>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">HR Admin Portal</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Rajgangpur Unit grievance analytics</p>
+          <Logo size="lg" variant="admin" />
+          <h1 className="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">HR Admin Portal</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Dalmia Cement (Bharat) Limited — Rajgangpur Plant</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -100,7 +101,11 @@ export default function AdminLoginPage() {
         <p className="mt-6 text-center text-xs text-slate-400 dark:text-slate-500">
           Demo portal — any email &amp; password will sign you in.
         </p>
-      </motion.div>
+        </motion.div>
+      </div>
+      <div className="relative z-10">
+        <Footer />
+      </div>
     </div>
   )
 }

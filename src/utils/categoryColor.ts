@@ -18,6 +18,13 @@ export const CATEGORY_COLORS: Record<GrievanceCategory, string> = {
   'Compliance & Ethics': 'bg-purple-50 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300',
   'Separation & Exit': 'bg-stone-100 text-stone-700 dark:bg-stone-500/15 dark:text-stone-300',
   'Suggestion / Improvement': 'bg-yellow-50 text-yellow-700 dark:bg-yellow-500/15 dark:text-yellow-300',
+  'Housing / Quarters': 'bg-fuchsia-50 text-fuchsia-700 dark:bg-fuchsia-500/15 dark:text-fuchsia-300',
+  Security: 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300',
+  Transport: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-500/20 dark:text-cyan-300',
+  Electrical: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300',
+  Mechanical: 'bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-300',
+  Civil: 'bg-stone-200 text-stone-800 dark:bg-stone-500/20 dark:text-stone-300',
+  Purchase: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300',
   Others: 'bg-gray-100 text-gray-700 dark:bg-gray-500/15 dark:text-gray-300',
 }
 

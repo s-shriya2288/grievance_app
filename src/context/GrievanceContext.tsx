@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { seedGrievances } from '../data/mockData'
 import { prioritizeBatch } from '../api/prioritize'
+import { getRoutedDepartment } from '../types'
 import type { Grievance, GrievanceAttachment, GrievanceCategory } from '../types'
 import type { Employee } from '../types'
 
@@ -18,7 +19,6 @@ export interface NewGrievanceInput {
   preferredResolution: string
   priority: Grievance['priority']
   aiPriorityReasoning: string
-  assignedTo: string
 }
 
 interface GrievanceContextValue {
@@ -54,6 +54,8 @@ export function GrievanceProvider({ children }: { children: ReactNode }) {
 
   const addGrievance = (employee: Employee, input: NewGrievanceInput) => {
     const timestamp = new Date().toISOString()
+    const routedDepartment = getRoutedDepartment(input.category)
+    const assignedTo = `${routedDepartment} Department`
     const grievance: Grievance = {
       id: `GRV-${1000 + grievances.length + 1}`,
       employeeId: employee.employeeCode,
@@ -63,12 +65,14 @@ export function GrievanceProvider({ children }: { children: ReactNode }) {
       reportingManager: employee.reportingManager,
       ...input,
       status: 'Open',
+      routedDepartment,
+      assignedTo,
       resolutionRemarks: '',
       employeeFeedback: '',
       closureRating: null,
       createdAt: timestamp,
       updatedAt: timestamp,
-      timeline: [{ status: 'Open', note: `Grievance submitted by employee. Routed to ${input.assignedTo}.`, timestamp }],
+      timeline: [{ status: 'Open', note: `Grievance submitted by employee. Routed to ${assignedTo}.`, timestamp }],
     }
     setGrievances((prev) => [grievance, ...prev])
     return grievance
@@ -118,7 +122,6 @@ export function GrievanceProvider({ children }: { children: ReactNode }) {
             ...g,
             priority: result.priority,
             aiPriorityReasoning: result.reasoning,
-            assignedTo: result.suggestedTeam,
             updatedAt: timestamp,
           }
         }),

@@ -1,8 +1,8 @@
-# Grievance App — Employee Portal
+# Dalmia Rajgangpur Grievance Portal
 
 An employee-facing portal for submitting and tracking workplace grievances, with AI-assisted
-priority triage, built for Dalmia Bharat Limited. Ships as a web app and as an Android app via
-Capacitor.
+priority triage, built for Dalmia Cement (Bharat) Limited's Rajgangpur Plant. Ships as a web app
+and as an Android app via Capacitor. Includes a separate HR Admin portal for org-wide analytics.
 
 ## Stack
 
@@ -17,16 +17,22 @@ Capacitor.
 
 ## Features
 
-- Mock login (any email/password signs you in)
-- Full HR grievance intake form: category/sub-category (18 categories), incident date, persons
-  involved, attachments, confidential submission, preferred resolution
-- **AI priority triage**: every submitted grievance is sent to Claude, which assigns a
-  priority (Low/Medium/High/Critical), a reasoning note, and a suggested owning team —
-  employees never pick a priority themselves
+- Mock login (any email/password signs you in), plus a separate HR Admin login at `/admin/login`
+- Full grievance intake form: category/sub-category (25 categories including plant-operations
+  categories like Housing/Quarters, Security, Transport, Electrical, Mechanical, Civil,
+  Purchase — every category includes an "Other" sub-category), incident date, persons involved,
+  attachments, confidential submission, preferred resolution
+- **AI priority triage**: every submitted grievance is sent to Claude, which assigns a priority
+  (Low/Medium/High/Critical) with a reasoning note — employees never pick a priority themselves
+- **Deterministic department routing**: each category maps to one of 13 departments (HR,
+  Housing, IT, Administration, Security, Transport, Finance, Medical, Safety, Electrical,
+  Mechanical, Civil, Purchase); a grievance is automatically routed there, not guessed by AI
 - "Re-run AI Prioritization" batch action to re-triage every grievance at once
 - Status tracking (Open → In Progress → Resolved → Closed) with a timeline per grievance
 - Employee feedback & closure rating once a grievance is marked Resolved
 - Employee profile page
+- HR Admin dashboard: complaints by department, average resolution time overall and per
+  department, scoped to the Rajgangpur Unit
 
 ## Getting started (web)
 

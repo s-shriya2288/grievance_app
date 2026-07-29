@@ -1,3 +1,4 @@
+import { getRoutedDepartment } from '../types'
 import type { Employee, Grievance } from '../types'
 
 export const demoEmployee: Employee = {
@@ -38,6 +39,7 @@ export const seedGrievances: Grievance[] = [
     aiPriorityReasoning:
       'Financial impact on the employee with a clear payroll error; should be verified before the next pay cycle closes.',
     status: 'In Progress',
+    routedDepartment: getRoutedDepartment('Payroll'),
     assignedTo: 'Payroll Team',
     resolutionRemarks: '',
     employeeFeedback: '',
@@ -68,6 +70,7 @@ export const seedGrievances: Grievance[] = [
     priority: 'Medium',
     aiPriorityReasoning: 'Affects working conditions for a full floor but is not safety-critical.',
     status: 'Closed',
+    routedDepartment: getRoutedDepartment('Facilities & Administration'),
     assignedTo: 'Facilities Team',
     resolutionRemarks: 'HVAC unit repaired and tested; temperature confirmed normal for 3 consecutive days.',
     employeeFeedback: 'Resolved quickly, AC has been working fine since.',
@@ -101,6 +104,7 @@ export const seedGrievances: Grievance[] = [
     priority: 'Low',
     aiPriorityReasoning: 'A policy suggestion with no immediate impact or deadline.',
     status: 'Open',
+    routedDepartment: getRoutedDepartment('HR Policies'),
     assignedTo: 'HR Policy Team',
     resolutionRemarks: '',
     employeeFeedback: '',

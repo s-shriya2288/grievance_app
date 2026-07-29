@@ -342,6 +342,20 @@ export default function GrievanceDetailPage() {
           <Field label="Preferred Resolution" value={grievance.preferredResolution} />
         </div>
 
+        {grievance.attachment && (
+          <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
+            <p className="text-xs text-slate-400 dark:text-slate-500">Attachment</p>
+            <a
+              href={grievance.attachment}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline dark:text-brand-400"
+            >
+              📎 View attachment
+            </a>
+          </div>
+        )}
+
         {grievance.resolution && (
           <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
             <p className="text-xs text-slate-400 dark:text-slate-500">Resolution Remarks</p>

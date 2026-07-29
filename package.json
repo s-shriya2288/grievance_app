@@ -23,6 +23,7 @@
     "@capacitor/core": "^8.4.1",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
+    "@vercel/blob": "^2.6.1",
     "bcryptjs": "^3.0.3",
     "cookie": "^2.0.1",
     "cors": "^2.8.6",

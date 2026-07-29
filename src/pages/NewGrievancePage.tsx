@@ -5,8 +5,11 @@ import { useAuth } from '../context/AuthContext'
 import { useGrievances } from '../context/GrievanceContext'
 import { prioritizeGrievance } from '../api/prioritize'
 import { fetchCategories } from '../api/reference'
+import { uploadAttachment } from '../api/upload'
 import { ApiError } from '../api/client'
 import type { CategoryOption } from '../types/api'
+
+const MAX_ATTACHMENT_BYTES = 4 * 1024 * 1024
 
 const inputClass =
   'w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/20'
@@ -25,6 +28,10 @@ export default function NewGrievancePage() {
   const [personsInvolved, setPersonsInvolved] = useState('')
   const [isConfidential, setIsConfidential] = useState(false)
   const [preferredResolution, setPreferredResolution] = useState('')
+
+  const [attachmentName, setAttachmentName] = useState<string | null>(null)
+  const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null)
+  const [attachmentUploading, setAttachmentUploading] = useState(false)
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [phase, setPhase] = useState<'idle' | 'analyzing' | 'error'>('idle')
@@ -50,6 +57,27 @@ export default function NewGrievancePage() {
     setCategoryId(nextId)
     const next = categories.find((c) => c.id === nextId)
     setSubcategoryId(next?.subcategories[0]?.id ?? '')
+  }
+
+  const handleFileChange = async (file: File | undefined) => {
+    if (!file) return
+    if (file.size > MAX_ATTACHMENT_BYTES) {
+      setErrors((prev) => ({ ...prev, attachment: 'File is too large. Maximum size is 4 MB.' }))
+      return
+    }
+    setErrors((prev) => ({ ...prev, attachment: '' }))
+    setAttachmentName(file.name)
+    setAttachmentUrl(null)
+    setAttachmentUploading(true)
+    try {
+      const { url } = await uploadAttachment(file)
+      setAttachmentUrl(url)
+    } catch (err) {
+      setErrors((prev) => ({ ...prev, attachment: err instanceof ApiError ? err.message : 'Failed to upload file.' }))
+      setAttachmentName(null)
+    } finally {
+      setAttachmentUploading(false)
+    }
   }
 
   const validate = () => {
@@ -87,6 +115,7 @@ export default function NewGrievancePage() {
         personsInvolved: personsInvolved.trim() || null,
         isConfidential,
         preferredResolution: preferredResolution.trim() || null,
+        attachment: attachmentUrl,
         priority: aiResult.priority,
         aiPriorityReasoning: aiResult.reasoning,
       })
@@ -232,6 +261,24 @@ export default function NewGrievancePage() {
           />
         </div>
 
+        <div>
+          <label htmlFor="attachment" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+            Attachment <span className="font-normal text-slate-400 dark:text-slate-500">(optional, PNG/JPEG/WEBP/PDF, max 4 MB)</span>
+          </label>
+          <input
+            id="attachment"
+            type="file"
+            accept="image/png,image/jpeg,image/webp,application/pdf"
+            onChange={(e) => handleFileChange(e.target.files?.[0])}
+            className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-3.5 file:py-2 file:text-sm file:font-semibold file:text-brand-700 hover:file:bg-brand-100 dark:text-slate-300 dark:file:bg-brand-500/15 dark:file:text-brand-300"
+          />
+          {attachmentUploading && <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Uploading {attachmentName}…</p>}
+          {attachmentUrl && !attachmentUploading && (
+            <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">✓ {attachmentName} uploaded</p>
+          )}
+          {errors.attachment && <p className="mt-1 text-xs text-rose-600 dark:text-rose-400">{errors.attachment}</p>}
+        </div>
+
         <fieldset>
           <legend className="mb-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">Confidential Submission</legend>
           <div className="flex gap-4 text-sm text-slate-600 dark:text-slate-300">
@@ -267,7 +314,7 @@ export default function NewGrievancePage() {
         <motion.button
           type="submit"
           whileTap={{ scale: 0.98 }}
-          disabled={(phase !== 'idle' && phase !== 'error') || !selectedCategory}
+          disabled={(phase !== 'idle' && phase !== 'error') || !selectedCategory || attachmentUploading}
           className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {phase === 'analyzing' && (

@@ -1,4 +1,4 @@
-import type { GrievanceCategory, GrievancePriority } from '../types'
+import type { GrievancePriority } from '../types/api'
 
 // In the web dev server this stays empty and Vite proxies /api to the local
 // backend. The packaged Android app has no dev proxy, so builds targeting it
@@ -6,7 +6,7 @@ import type { GrievanceCategory, GrievancePriority } from '../types'
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 
 export interface PrioritizeRequest {
-  category: GrievanceCategory
+  category: string
   subCategory: string
   subject: string
   description: string

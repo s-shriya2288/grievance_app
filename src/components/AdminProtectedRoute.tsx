@@ -1,11 +1,16 @@
 import type { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
-import { useAdminAuth } from '../context/AdminAuthContext'
+import { useAuth } from '../context/AuthContext'
+
+const ADMIN_ROLES = ['Department Admin', 'Super Admin']
 
 export default function AdminProtectedRoute({ children }: { children: ReactNode }) {
-  const { isAdminAuthenticated } = useAdminAuth()
-  if (!isAdminAuthenticated) {
-    return <Navigate to="/admin/login" replace />
+  const { isAuthenticated, user } = useAuth()
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+  if (!user || !ADMIN_ROLES.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />
   }
   return <>{children}</>
 }

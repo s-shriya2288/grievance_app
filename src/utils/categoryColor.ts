@@ -1,6 +1,4 @@
-import type { GrievanceCategory } from '../types'
-
-export const CATEGORY_COLORS: Record<GrievanceCategory, string> = {
+export const CATEGORY_COLORS: Record<string, string> = {
   'Compensation & Benefits': 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
   'Attendance & Leave': 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300',
   Payroll: 'bg-teal-50 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300',
@@ -28,7 +26,7 @@ export const CATEGORY_COLORS: Record<GrievanceCategory, string> = {
   Others: 'bg-gray-100 text-gray-700 dark:bg-gray-500/15 dark:text-gray-300',
 }
 
-export function getCategoryColorClasses(category: GrievanceCategory) {
+export function getCategoryColorClasses(category: string) {
   return CATEGORY_COLORS[category] ?? CATEGORY_COLORS.Others
 }
 

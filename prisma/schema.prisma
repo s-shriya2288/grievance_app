@@ -1,0 +1,259 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Lookup tables
+// ---------------------------------------------------------------------------
+
+model Department {
+  id             String   @id @default(uuid())
+  departmentName String   @unique @map("department_name")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  users       User[]
+  categories  GrievanceCategory[]
+  grievances  Grievance[]
+
+  @@map("departments")
+}
+
+model Role {
+  id       String @id @default(uuid())
+  roleName String @unique @map("role_name")
+
+  users User[]
+
+  @@map("roles")
+}
+
+model GrievanceCategory {
+  id           String @id @default(uuid())
+  departmentId String @map("department_id")
+  categoryName String @map("category_name")
+
+  department    Department              @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  subcategories GrievanceSubcategory[]
+  grievances    Grievance[]
+
+  @@unique([departmentId, categoryName])
+  @@index([departmentId])
+  @@map("grievance_categories")
+}
+
+model GrievanceSubcategory {
+  id              String @id @default(uuid())
+  categoryId      String @map("category_id")
+  subcategoryName String @map("subcategory_name")
+
+  category   GrievanceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  grievances Grievance[]
+
+  @@unique([categoryId, subcategoryName])
+  @@index([categoryId])
+  @@map("grievance_subcategories")
+}
+
+// ---------------------------------------------------------------------------
+// Users
+// ---------------------------------------------------------------------------
+
+enum AccountStatus {
+  Active
+  Suspended
+  Pending
+}
+
+model User {
+  id           String  @id @default(uuid())
+  employeeId   String  @unique @map("employee_id")
+  firstName    String  @map("first_name")
+  lastName     String  @map("last_name")
+  email        String  @unique
+  phoneNumber  String? @map("phone_number")
+  passwordHash String  @map("password_hash")
+  departmentId String  @map("department_id")
+  roleId       String  @map("role_id")
+  plant        String  @default("Rajgangpur Unit")
+  profilePhoto String? @map("profile_photo")
+
+  isVerified    Boolean       @default(true) @map("is_verified")
+  accountStatus AccountStatus @default(Active) @map("account_status")
+
+  // Password reset (forgot-password OTP flow)
+  resetOtpHash      String?   @map("reset_otp_hash")
+  resetOtpExpiresAt DateTime? @map("reset_otp_expires_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  lastLogin DateTime? @map("last_login")
+
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  grievances        Grievance[]        @relation("SubmittedGrievances")
+  assignedGrievances Grievance[]       @relation("AssignedGrievances")
+  comments          GrievanceComment[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+
+  @@index([departmentId])
+  @@index([roleId])
+  @@map("users")
+}
+
+// ---------------------------------------------------------------------------
+// Grievances
+// ---------------------------------------------------------------------------
+
+enum GrievancePriority {
+  Low
+  Medium
+  High
+  Critical
+}
+
+enum GrievanceStatus {
+  Open
+  InProgress
+  Resolved
+  Closed
+}
+
+model Grievance {
+  id           String @id @default(uuid())
+  ticketNumber String @unique @map("ticket_number")
+
+  employeeId     String  @map("employee_id")
+  departmentId   String  @map("department_id")
+  categoryId     String  @map("category_id")
+  subcategoryId  String  @map("subcategory_id")
+  assignedAdminId String? @map("assigned_admin")
+
+  // Fields beyond the base spec, preserved from the existing intake form
+  subject             String
+  dateOfIncident       DateTime? @map("date_of_incident")
+  personsInvolved      String?   @map("persons_involved")
+  isConfidential       Boolean   @default(false) @map("is_confidential")
+  preferredResolution  String?   @map("preferred_resolution")
+  aiPriorityReasoning  String?   @map("ai_priority_reasoning")
+
+  priority    GrievancePriority @default(Medium)
+  description String
+  attachment  String?
+  status      GrievanceStatus   @default(Open)
+  resolution  String?
+  reopenCount Int               @default(0) @map("reopen_count")
+
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  resolvedAt DateTime? @map("resolved_at")
+  closedAt   DateTime? @map("closed_at")
+
+  employee      User                 @relation("SubmittedGrievances", fields: [employeeId], references: [id], onDelete: Restrict)
+  assignedAdmin User?                @relation("AssignedGrievances", fields: [assignedAdminId], references: [id], onDelete: SetNull)
+  department    Department           @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  category      GrievanceCategory    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  subcategory   GrievanceSubcategory @relation(fields: [subcategoryId], references: [id], onDelete: Restrict)
+
+  comments     GrievanceComment[]
+  satisfaction Satisfaction?
+
+  @@index([employeeId])
+  @@index([departmentId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("grievances")
+}
+
+model GrievanceComment {
+  id          String   @id @default(uuid())
+  grievanceId String   @map("grievance_id")
+  userId      String   @map("user_id")
+  comment     String
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  grievance Grievance @relation(fields: [grievanceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([grievanceId])
+  @@map("grievance_comments")
+}
+
+model Satisfaction {
+  id          String   @id @default(uuid())
+  grievanceId String   @unique @map("grievance_id")
+  rating      Int
+  feedback    String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  grievance Grievance @relation(fields: [grievanceId], references: [id], onDelete: Cascade)
+
+  @@map("satisfaction")
+}
+
+// ---------------------------------------------------------------------------
+// Notifications / Email / Audit
+// ---------------------------------------------------------------------------
+
+enum NotificationType {
+  TicketSubmitted
+  Assigned
+  StatusChanged
+  ReminderSent
+  Resolved
+  Reopened
+  Closed
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+enum EmailStatus {
+  Sent
+  Failed
+  Skipped
+}
+
+model EmailLog {
+  id        String      @id @default(uuid())
+  recipient String
+  subject   String
+  status    EmailStatus
+  sentAt    DateTime    @default(now()) @map("sent_at")
+
+  @@map("email_logs")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  action    String
+  entity    String
+  entityId  String?  @map("entity_id")
+  ipAddress String?  @map("ip_address")
+  timestamp DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@map("audit_logs")
+}

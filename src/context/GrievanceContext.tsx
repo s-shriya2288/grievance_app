@@ -1,139 +1,103 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { seedGrievances } from '../data/mockData'
-import { prioritizeBatch } from '../api/prioritize'
-import { getRoutedDepartment } from '../types'
-import type { Grievance, GrievanceAttachment, GrievanceCategory } from '../types'
-import type { Employee } from '../types'
-
-const STORAGE_KEY = 'grievance-portal:grievances'
-
-export interface NewGrievanceInput {
-  category: GrievanceCategory
-  subCategory: string
-  subject: string
-  description: string
-  dateOfIncident: string
-  personsInvolved: string
-  attachments: GrievanceAttachment[]
-  isConfidential: boolean
-  preferredResolution: string
-  priority: Grievance['priority']
-  aiPriorityReasoning: string
-}
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import * as grievanceApi from '../api/grievances'
+import { useAuth } from './AuthContext'
+import type { Grievance } from '../types/api'
 
 interface GrievanceContextValue {
   grievances: Grievance[]
-  addGrievance: (employee: Employee, input: NewGrievanceInput) => Grievance
+  isLoading: boolean
+  error: string | null
+  refresh: () => Promise<void>
+  createGrievance: (input: grievanceApi.CreateGrievanceInput) => Promise<Grievance>
   getGrievance: (id: string) => Grievance | undefined
-  submitFeedback: (id: string, feedback: string, rating: number) => void
-  reprioritizeAll: () => Promise<void>
-  isReprioritizing: boolean
+  fetchGrievance: (id: string) => Promise<Grievance>
+  addComment: (id: string, comment: string) => Promise<void>
+  submitSatisfaction: (id: string, rating: number, feedback: string) => Promise<void>
+  reopenGrievance: (id: string) => Promise<void>
+  updateStatus: (id: string, input: grievanceApi.UpdateGrievanceStatusInput) => Promise<void>
 }
 
 const GrievanceContext = createContext<GrievanceContextValue | undefined>(undefined)
 
-function loadInitial(): Grievance[] {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  if (stored) {
-    try {
-      return JSON.parse(stored)
-    } catch {
-      // fall through to seed data
-    }
-  }
-  return seedGrievances
-}
-
 export function GrievanceProvider({ children }: { children: ReactNode }) {
-  const [grievances, setGrievances] = useState<Grievance[]>(loadInitial)
-  const [isReprioritizing, setIsReprioritizing] = useState(false)
+  const { isAuthenticated } = useAuth()
+  const [grievances, setGrievances] = useState<Grievance[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const refresh = useCallback(async () => {
+    if (!isAuthenticated) {
+      setGrievances([])
+      return
+    }
+    setIsLoading(true)
+    setError(null)
+    try {
+      const { grievances } = await grievanceApi.listGrievances()
+      setGrievances(grievances)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load grievances.')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [isAuthenticated])
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(grievances))
-  }, [grievances])
+    refresh()
+  }, [refresh])
 
-  const addGrievance = (employee: Employee, input: NewGrievanceInput) => {
-    const timestamp = new Date().toISOString()
-    const routedDepartment = getRoutedDepartment(input.category)
-    const assignedTo = `${routedDepartment} Department`
-    const grievance: Grievance = {
-      id: `GRV-${1000 + grievances.length + 1}`,
-      employeeId: employee.employeeCode,
-      employeeName: employee.name,
-      department: employee.department,
-      unitLocation: employee.unitLocation,
-      reportingManager: employee.reportingManager,
-      ...input,
-      status: 'Open',
-      routedDepartment,
-      assignedTo,
-      resolutionRemarks: '',
-      employeeFeedback: '',
-      closureRating: null,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-      timeline: [{ status: 'Open', note: `Grievance submitted by employee. Routed to ${assignedTo}.`, timestamp }],
-    }
+  const createGrievance = async (input: grievanceApi.CreateGrievanceInput) => {
+    const { grievance } = await grievanceApi.createGrievance(input)
     setGrievances((prev) => [grievance, ...prev])
     return grievance
   }
 
   const getGrievance = (id: string) => grievances.find((g) => g.id === id)
 
-  const submitFeedback = (id: string, feedback: string, rating: number) => {
-    const timestamp = new Date().toISOString()
-    setGrievances((prev) =>
-      prev.map((g) =>
-        g.id === id
-          ? {
-              ...g,
-              employeeFeedback: feedback,
-              closureRating: rating,
-              status: 'Closed',
-              updatedAt: timestamp,
-              timeline: [...g.timeline, { status: 'Closed', note: 'Employee submitted feedback and closed the grievance.', timestamp }],
-            }
-          : g,
-      ),
-    )
+  const fetchGrievance = async (id: string) => {
+    const { grievance } = await grievanceApi.getGrievance(id)
+    setGrievances((prev) => {
+      const exists = prev.some((g) => g.id === id)
+      return exists ? prev.map((g) => (g.id === id ? grievance : g)) : [grievance, ...prev]
+    })
+    return grievance
   }
 
-  const reprioritizeAll = async () => {
-    setIsReprioritizing(true)
-    try {
-      const results = await prioritizeBatch(
-        grievances.map((g) => ({
-          id: g.id,
-          category: g.category,
-          subCategory: g.subCategory,
-          subject: g.subject,
-          description: g.description,
-          personsInvolved: g.personsInvolved,
-          isConfidential: g.isConfidential,
-        })),
-      )
-      const byId = new Map(results.map((r) => [r.id, r]))
-      const timestamp = new Date().toISOString()
-      setGrievances((prev) =>
-        prev.map((g) => {
-          const result = byId.get(g.id)
-          if (!result) return g
-          return {
-            ...g,
-            priority: result.priority,
-            aiPriorityReasoning: result.reasoning,
-            updatedAt: timestamp,
-          }
-        }),
-      )
-    } finally {
-      setIsReprioritizing(false)
-    }
+  const addComment = async (id: string, comment: string) => {
+    await grievanceApi.addComment(id, comment)
+    await fetchGrievance(id)
+  }
+
+  const submitSatisfaction = async (id: string, rating: number, feedback: string) => {
+    const { grievance } = await grievanceApi.submitSatisfaction(id, rating, feedback)
+    setGrievances((prev) => prev.map((g) => (g.id === id ? grievance : g)))
+  }
+
+  const reopenGrievance = async (id: string) => {
+    const { grievance } = await grievanceApi.reopenGrievance(id)
+    setGrievances((prev) => prev.map((g) => (g.id === id ? grievance : g)))
+  }
+
+  const updateStatus = async (id: string, input: grievanceApi.UpdateGrievanceStatusInput) => {
+    const { grievance } = await grievanceApi.updateGrievanceStatus(id, input)
+    setGrievances((prev) => prev.map((g) => (g.id === id ? grievance : g)))
   }
 
   return (
     <GrievanceContext.Provider
-      value={{ grievances, addGrievance, getGrievance, submitFeedback, reprioritizeAll, isReprioritizing }}
+      value={{
+        grievances,
+        isLoading,
+        error,
+        refresh,
+        createGrievance,
+        getGrievance,
+        fetchGrievance,
+        addComment,
+        submitSatisfaction,
+        reopenGrievance,
+        updateStatus,
+      }}
     >
       {children}
     </GrievanceContext.Provider>

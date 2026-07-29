@@ -1,8 +1,13 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { orgWideGrievances } from '../data/orgGrievances'
-import { averageResolutionByGroup, averageResolutionDays, countBy } from '../utils/analytics'
+import { useGrievances } from '../context/GrievanceContext'
+import { StatusBadge, PriorityBadge } from '../components/StatusBadge'
+import CategoryChip from '../components/CategoryChip'
 import BarList from '../components/BarList'
+import { averageResolutionByGroup, averageResolutionDays, countBy } from '../utils/analytics'
+import { formatDate } from '../utils/format'
+import type { GrievancePriority, GrievanceStatus } from '../types/api'
 
 const container = {
   hidden: { opacity: 0 },
@@ -20,14 +25,31 @@ function formatDays(days: number | null) {
   return `${days.toFixed(1)} days`
 }
 
-export default function AdminDashboardPage() {
-  const grievances = orgWideGrievances
+const statusFilters: Array<GrievanceStatus | 'All'> = ['All', 'Open', 'InProgress', 'Resolved', 'Closed']
+const statusLabels: Record<GrievanceStatus | 'All', string> = {
+  All: 'All',
+  Open: 'Open',
+  InProgress: 'In Progress',
+  Resolved: 'Resolved',
+  Closed: 'Closed',
+}
 
-  const byDepartment = useMemo(() => countBy(grievances, (g) => g.department), [grievances])
+const priorityFilters: Array<GrievancePriority | 'All'> = ['All', 'Critical', 'High', 'Medium', 'Low']
+
+export default function AdminDashboardPage() {
+  const { grievances, isLoading, error } = useGrievances()
+  const [statusFilter, setStatusFilter] = useState<GrievanceStatus | 'All'>('All')
+  const [priorityFilter, setPriorityFilter] = useState<GrievancePriority | 'All'>('All')
+  const [search, setSearch] = useState('')
+
+  const byDepartment = useMemo(() => countBy(grievances, (g) => g.department.departmentName), [grievances])
   const overallAvgResolution = useMemo(() => averageResolutionDays(grievances), [grievances])
-  const resolutionByDepartment = useMemo(() => averageResolutionByGroup(grievances, (g) => g.department), [grievances])
+  const resolutionByDepartment = useMemo(
+    () => averageResolutionByGroup(grievances, (g) => g.department.departmentName),
+    [grievances],
+  )
   const openCount = useMemo(
-    () => grievances.filter((g) => g.status === 'Open' || g.status === 'In Progress').length,
+    () => grievances.filter((g) => g.status === 'Open' || g.status === 'InProgress').length,
     [grievances],
   )
 
@@ -54,6 +76,18 @@ export default function AdminDashboardPage() {
 
   const accentIcons = { brand: '📋', orange: '⏳', green: '⏱', sky: '🏆' }
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return grievances.filter((g) => {
+      if (statusFilter !== 'All' && g.status !== statusFilter) return false
+      if (priorityFilter !== 'All' && g.priority !== priorityFilter) return false
+      if (q && !`${g.ticketNumber} ${g.subject} ${g.employee.firstName} ${g.employee.lastName}`.toLowerCase().includes(q)) {
+        return false
+      }
+      return true
+    })
+  }, [grievances, statusFilter, priorityFilter, search])
+
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
       <motion.div variants={item}>
@@ -62,6 +96,12 @@ export default function AdminDashboardPage() {
           Rajgangpur Unit — where grievances come from and how long they take to resolve.
         </p>
       </motion.div>
+
+      {error && (
+        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+          {error}
+        </p>
+      )}
 
       <motion.div variants={item} className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((stat) => (
@@ -110,6 +150,79 @@ export default function AdminDashboardPage() {
             </tbody>
           </table>
         </div>
+      </motion.div>
+
+      <motion.div variants={item} className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="font-semibold text-slate-900 dark:text-slate-100">Grievance Queue</h2>
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search ticket, subject, employee…"
+            className="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/20 sm:w-64"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2 px-6 pt-4">
+          {statusFilters.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setStatusFilter(s)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                statusFilter === s
+                  ? 'bg-brand-600 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              }`}
+            >
+              {statusLabels[s]}
+            </button>
+          ))}
+          <span className="mx-1 w-px bg-slate-200 dark:bg-slate-800" />
+          {priorityFilters.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setPriorityFilter(p)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                priorityFilter === p
+                  ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+
+        <ul className="mt-4 divide-y divide-slate-100 dark:divide-slate-800">
+          {filtered.map((grievance) => (
+            <li key={grievance.id}>
+              <Link
+                to={`/grievances/${grievance.id}`}
+                className="flex flex-col gap-2 px-6 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <CategoryChip category={grievance.category.categoryName} />
+                    <span className="text-xs text-slate-400 dark:text-slate-500">{grievance.ticketNumber}</span>
+                  </div>
+                  <p className="mt-1 truncate font-medium text-slate-800 dark:text-slate-200">{grievance.subject}</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-3">
+                    <span className="text-xs text-slate-400 dark:text-slate-500">
+                      {grievance.employee.firstName} {grievance.employee.lastName} ({grievance.employee.employeeId})
+                    </span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500">Submitted {formatDate(grievance.createdAt)}</span>
+                    <PriorityBadge priority={grievance.priority} />
+                  </div>
+                </div>
+                <StatusBadge status={grievance.status} />
+              </Link>
+            </li>
+          ))}
+          {!isLoading && filtered.length === 0 && (
+            <li className="px-6 py-10 text-center text-sm text-slate-400 dark:text-slate-500">No grievances match this filter.</li>
+          )}
+        </ul>
       </motion.div>
     </motion.div>
   )

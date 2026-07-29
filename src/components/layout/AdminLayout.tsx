@@ -1,19 +1,19 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import { useAdminAuth } from '../../context/AdminAuthContext'
+import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
 import Logo from '../Logo'
 import Footer from '../Footer'
 
 export default function AdminLayout() {
-  const { admin, logoutAdmin } = useAdminAuth()
+  const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const location = useLocation()
 
-  const handleLogout = () => {
-    logoutAdmin()
-    navigate('/admin/login', { replace: true })
+  const handleLogout = async () => {
+    await logout()
+    navigate('/login', { replace: true })
   }
 
   return (
@@ -66,7 +66,10 @@ export default function AdminLayout() {
             <Logo size="sm" />
           </div>
           <div className="hidden text-sm text-slate-500 dark:text-slate-400 md:block">
-            <span className="font-medium text-slate-800 dark:text-slate-100">{admin?.name}</span> · {admin?.role}
+            <span className="font-medium text-slate-800 dark:text-slate-100">
+              {user?.firstName} {user?.lastName}
+            </span>{' '}
+            · {user?.role}
           </div>
           <div className="flex items-center gap-2">
             <button

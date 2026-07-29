@@ -1,12 +1,117 @@
-import { useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { type FormEvent, useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'motion/react'
+import { useAuth } from '../context/AuthContext'
 import { useGrievances } from '../context/GrievanceContext'
 import { PriorityBadge, StatusBadge } from '../components/StatusBadge'
 import CategoryChip from '../components/CategoryChip'
+import { ApiError } from '../api/client'
 import { formatDate, formatDateTime } from '../utils/format'
+import type { Grievance, GrievanceStatus } from '../types/api'
 
-function Field({ label, value }: { label: string; value: string }) {
+const ADMIN_ROLES = ['Department Admin', 'Super Admin']
+const adminStatusOptions: GrievanceStatus[] = ['Open', 'InProgress', 'Resolved']
+const adminStatusLabels: Record<GrievanceStatus, string> = {
+  Open: 'Open',
+  InProgress: 'In Progress',
+  Resolved: 'Resolved',
+  Closed: 'Closed',
+}
+
+function AdminActionsPanel({ grievance }: { grievance: Grievance }) {
+  const { user } = useAuth()
+  const { updateStatus } = useGrievances()
+  const [status, setStatus] = useState<GrievanceStatus>(grievance.status === 'Closed' ? 'Resolved' : grievance.status)
+  const [resolution, setResolution] = useState(grievance.resolution ?? '')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  if (!user || !ADMIN_ROLES.includes(user.role) || grievance.status === 'Closed') return null
+
+  const handleSave = async () => {
+    setSaving(true)
+    setSaved(false)
+    try {
+      await updateStatus(grievance.id, {
+        status,
+        resolution: resolution.trim() || null,
+      })
+      setSaved(true)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleAssignToMe = async () => {
+    setSaving(true)
+    try {
+      await updateStatus(grievance.id, { assignedAdminId: user.id })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-xl border border-sky-200 bg-sky-50/40 p-6 dark:border-sky-500/30 dark:bg-sky-500/10"
+    >
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Admin Actions</h2>
+        {!grievance.assignedAdmin && (
+          <button
+            type="button"
+            onClick={handleAssignToMe}
+            disabled={saving}
+            className="text-sm font-medium text-sky-700 hover:underline dark:text-sky-300"
+          >
+            Assign to me
+          </button>
+        )}
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Status</label>
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value as GrievanceStatus)}
+            className="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          >
+            {adminStatusOptions.map((s) => (
+              <option key={s} value={s}>
+                {adminStatusLabels[s]}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Resolution Remarks</label>
+        <textarea
+          value={resolution}
+          onChange={(e) => setResolution(e.target.value)}
+          rows={3}
+          placeholder="Required before marking Resolved"
+          className="w-full resize-none rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+        />
+      </div>
+
+      <button
+        type="button"
+        onClick={handleSave}
+        disabled={saving}
+        className="mt-4 rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save Changes'}
+      </button>
+    </motion.div>
+  )
+}
+
+function Field({ label, value }: { label: string; value: string | null | undefined }) {
   if (!value) return null
   return (
     <div>
@@ -16,18 +121,47 @@ function Field({ label, value }: { label: string; value: string }) {
   )
 }
 
+interface TimelineEntry {
+  label: string
+  timestamp: string
+  note?: string
+}
+
+function buildTimeline(grievance: Grievance): TimelineEntry[] {
+  const entries: TimelineEntry[] = [{ label: 'Submitted', timestamp: grievance.createdAt }]
+  for (const comment of grievance.comments) {
+    entries.push({
+      label: `Comment · ${comment.user.firstName} ${comment.user.lastName}`,
+      timestamp: comment.createdAt,
+      note: comment.comment,
+    })
+  }
+  if (grievance.resolvedAt) entries.push({ label: 'Resolved', timestamp: grievance.resolvedAt, note: grievance.resolution ?? undefined })
+  if (grievance.satisfaction) {
+    entries.push({
+      label: 'Employee Review',
+      timestamp: grievance.satisfaction.createdAt,
+      note: `Rated ${grievance.satisfaction.rating}/5${grievance.satisfaction.feedback ? ` — ${grievance.satisfaction.feedback}` : ''}`,
+    })
+  }
+  if (grievance.closedAt) entries.push({ label: 'Closed', timestamp: grievance.closedAt })
+  return entries.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+}
+
 function FeedbackForm({ grievanceId }: { grievanceId: string }) {
-  const { submitFeedback } = useGrievances()
+  const { submitSatisfaction } = useGrievances()
   const [rating, setRating] = useState(5)
   const [feedback, setFeedback] = useState('')
-  const [done, setDone] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = () => {
-    submitFeedback(grievanceId, feedback.trim(), rating)
-    setDone(true)
+  const handleSubmit = async () => {
+    setSubmitting(true)
+    try {
+      await submitSatisfaction(grievanceId, rating, feedback.trim())
+    } finally {
+      setSubmitting(false)
+    }
   }
-
-  if (done) return null
 
   return (
     <motion.div
@@ -63,22 +197,87 @@ function FeedbackForm({ grievanceId }: { grievanceId: string }) {
       <button
         type="button"
         onClick={handleSubmit}
-        className="mt-3 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+        disabled={submitting}
+        className="mt-3 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        Submit Feedback &amp; Close
+        {submitting ? 'Submitting…' : 'Submit Feedback & Close'}
       </button>
     </motion.div>
   )
 }
 
+function CommentForm({ grievanceId }: { grievanceId: string }) {
+  const { addComment } = useGrievances()
+  const [comment, setComment] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault()
+    if (!comment.trim()) return
+    setSubmitting(true)
+    try {
+      await addComment(grievanceId, comment.trim())
+      setComment('')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex gap-2">
+      <input
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+        placeholder="Add a comment…"
+        className="flex-1 rounded-lg border border-slate-300 px-3.5 py-2 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/20"
+      />
+      <button
+        type="submit"
+        disabled={submitting || !comment.trim()}
+        className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        Post
+      </button>
+    </form>
+  )
+}
+
 export default function GrievanceDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { getGrievance } = useGrievances()
-  const grievance = id ? getGrievance(id) : undefined
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const { getGrievance, fetchGrievance, reopenGrievance } = useGrievances()
+  const [grievance, setGrievance] = useState<Grievance | undefined>(id ? getGrievance(id) : undefined)
+  const [notFound, setNotFound] = useState(false)
+  const [reopening, setReopening] = useState(false)
 
-  if (!grievance) {
-    return <Navigate to="/grievances" replace />
+  useEffect(() => {
+    if (!id) return
+    fetchGrievance(id)
+      .then(setGrievance)
+      .catch((err) => {
+        if (err instanceof ApiError && (err.status === 404 || err.status === 403)) setNotFound(true)
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
+
+  if (notFound) {
+    navigate('/grievances', { replace: true })
+    return null
   }
+  if (!grievance) return null
+
+  const handleReopen = async () => {
+    setReopening(true)
+    try {
+      await reopenGrievance(grievance.id)
+      if (id) setGrievance(await fetchGrievance(id))
+    } finally {
+      setReopening(false)
+    }
+  }
+
+  const timeline = buildTimeline(grievance)
 
   return (
     <div className="space-y-6">
@@ -98,9 +297,9 @@ export default function GrievanceDetailPage() {
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <CategoryChip category={grievance.category} />
+              <CategoryChip category={grievance.category.categoryName} />
               <span className="text-xs text-slate-400 dark:text-slate-500">
-                {grievance.id} · {grievance.subCategory}
+                {grievance.ticketNumber} · {grievance.subcategory.subcategoryName}
               </span>
             </div>
             <h1 className="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">{grievance.subject}</h1>
@@ -119,6 +318,11 @@ export default function GrievanceDetailPage() {
               Confidential submission
             </span>
           )}
+          {grievance.reopenCount > 0 && (
+            <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 dark:bg-amber-500/15 dark:text-amber-300">
+              Reopened {grievance.reopenCount}×
+            </span>
+          )}
         </div>
 
         <p className="mt-5 whitespace-pre-wrap text-sm leading-relaxed text-slate-600 dark:text-slate-300">{grievance.description}</p>
@@ -131,49 +335,48 @@ export default function GrievanceDetailPage() {
         )}
 
         <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-100 pt-5 dark:border-slate-800 sm:grid-cols-3">
-          <Field label="Employee" value={`${grievance.employeeName} (${grievance.employeeId})`} />
-          <Field label="Department" value={grievance.department} />
-          <Field label="Unit / Location" value={grievance.unitLocation} />
-          <Field label="Reporting Manager" value={grievance.reportingManager} />
+          <Field label="Employee" value={`${grievance.employee.firstName} ${grievance.employee.lastName} (${grievance.employee.employeeId})`} />
+          <Field label="Department" value={grievance.department.departmentName} />
           <Field label="Persons Involved" value={grievance.personsInvolved} />
-          <Field label="Assigned To" value={grievance.assignedTo} />
+          <Field label="Assigned To" value={grievance.assignedAdmin ? `${grievance.assignedAdmin.firstName} ${grievance.assignedAdmin.lastName}` : `${grievance.department.departmentName} Department`} />
           <Field label="Preferred Resolution" value={grievance.preferredResolution} />
         </div>
 
-        {grievance.attachments.length > 0 && (
-          <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
-            <p className="text-xs text-slate-400 dark:text-slate-500">Attachments</p>
-            <ul className="mt-1 space-y-1">
-              {grievance.attachments.map((file) => (
-                <li key={file.name} className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  📎 {file.name}{' '}
-                  <span className="font-normal text-slate-400 dark:text-slate-500">({(file.size / 1024).toFixed(0)} KB)</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {grievance.resolutionRemarks && (
+        {grievance.resolution && (
           <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
             <p className="text-xs text-slate-400 dark:text-slate-500">Resolution Remarks</p>
-            <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{grievance.resolutionRemarks}</p>
+            <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{grievance.resolution}</p>
           </div>
         )}
 
-        {grievance.closureRating !== null && (
+        {grievance.satisfaction && (
           <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
             <p className="text-xs text-slate-400 dark:text-slate-500">Your Feedback</p>
             <p className="mt-1 text-sm text-accent-orange">
-              {'★'.repeat(grievance.closureRating)}
-              {'☆'.repeat(5 - grievance.closureRating)}
+              {'★'.repeat(grievance.satisfaction.rating)}
+              {'☆'.repeat(5 - grievance.satisfaction.rating)}
             </p>
-            {grievance.employeeFeedback && <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{grievance.employeeFeedback}</p>}
+            {grievance.satisfaction.feedback && <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{grievance.satisfaction.feedback}</p>}
+          </div>
+        )}
+
+        {(grievance.status === 'Resolved' || grievance.status === 'Closed') && user?.id === grievance.employee.id && (
+          <div className="mt-5 border-t border-slate-100 pt-5 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={handleReopen}
+              disabled={reopening}
+              className="rounded-lg border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-rose-500/30 dark:text-rose-400 dark:hover:bg-rose-500/10"
+            >
+              {reopening ? 'Reopening…' : 'Reopen — the issue still exists'}
+            </button>
           </div>
         )}
       </motion.div>
 
-      {grievance.status === 'Resolved' && <FeedbackForm grievanceId={grievance.id} />}
+      <AdminActionsPanel grievance={grievance} />
+
+      {grievance.status === 'Resolved' && user?.id === grievance.employee.id && <FeedbackForm grievanceId={grievance.id} />}
 
       <motion.div
         initial={{ opacity: 0, y: 8 }}
@@ -182,25 +385,26 @@ export default function GrievanceDetailPage() {
         className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
       >
         <h2 className="mb-5 font-semibold text-slate-900 dark:text-slate-100">Status Timeline</h2>
-        <ol className="space-y-6">
-          {grievance.timeline.map((event, index) => (
+        <ol className="mb-6 space-y-6">
+          {timeline.map((entry, index) => (
             <li key={index} className="relative flex gap-4 pl-1">
               <div className="flex flex-col items-center">
                 <span className="z-10 flex h-3 w-3 shrink-0 rounded-full bg-brand-600" />
-                {index < grievance.timeline.length - 1 && (
+                {index < timeline.length - 1 && (
                   <span className="mt-1 w-px flex-1 bg-slate-200 dark:bg-slate-800" style={{ minHeight: 32 }} />
                 )}
               </div>
               <div className="pb-2">
                 <div className="flex items-center gap-2">
-                  <StatusBadge status={event.status} />
-                  <span className="text-xs text-slate-400 dark:text-slate-500">{formatDateTime(event.timestamp)}</span>
+                  <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{entry.label}</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">{formatDateTime(entry.timestamp)}</span>
                 </div>
-                <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300">{event.note}</p>
+                {entry.note && <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-300">{entry.note}</p>}
               </div>
             </li>
           ))}
         </ol>
+        <CommentForm grievanceId={grievance.id} />
       </motion.div>
     </div>
   )

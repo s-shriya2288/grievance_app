@@ -1,10 +1,9 @@
-import type { Grievance } from '../types'
+import type { Grievance } from '../types/api'
 
 export function getResolutionDays(grievance: Grievance): number | null {
-  const resolvedEvent = grievance.timeline.find((event) => event.status === 'Resolved')
-  if (!resolvedEvent) return null
+  if (!grievance.resolvedAt) return null
   const created = new Date(grievance.createdAt).getTime()
-  const resolved = new Date(resolvedEvent.timestamp).getTime()
+  const resolved = new Date(grievance.resolvedAt).getTime()
   return (resolved - created) / (1000 * 60 * 60 * 24)
 }
 

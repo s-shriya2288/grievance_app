@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAuth } from '../context/AuthContext'
@@ -6,8 +6,9 @@ import { useGrievances } from '../context/GrievanceContext'
 import { StatusBadge } from '../components/StatusBadge'
 import CategoryChip from '../components/CategoryChip'
 import Logo from '../components/Logo'
+import { listNotifications } from '../api/notifications'
 import { timeAgo } from '../utils/format'
-import type { Grievance } from '../types'
+import type { AppNotification, Grievance } from '../types/api'
 
 const accentClasses = {
   brand: 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300',
@@ -36,18 +37,30 @@ interface StatDef {
 
 const statDefs: StatDef[] = [
   { label: 'Total Grievances', accent: 'brand', filter: () => true },
-  { label: 'Open / In Progress', accent: 'orange', filter: (g) => g.status === 'Open' || g.status === 'In Progress' },
+  { label: 'Open / In Progress', accent: 'orange', filter: (g) => g.status === 'Open' || g.status === 'InProgress' },
   { label: 'Resolved / Closed', accent: 'green', filter: (g) => g.status === 'Resolved' || g.status === 'Closed' },
   { label: 'Critical / High Priority', accent: 'rose', filter: (g) => g.priority === 'Critical' || g.priority === 'High' },
 ]
 
 export default function DashboardPage() {
-  const { employee } = useAuth()
+  const { user } = useAuth()
   const { grievances } = useGrievances()
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
+  const [notifications, setNotifications] = useState<AppNotification[]>([])
+
+  useEffect(() => {
+    listNotifications()
+      .then(({ notifications }) => setNotifications(notifications.slice(0, 5)))
+      .catch(() => setNotifications([]))
+  }, [])
 
   const stats = useMemo(
     () => statDefs.map((def) => ({ ...def, value: grievances.filter(def.filter).length })),
+    [grievances],
+  )
+
+  const pendingActions = useMemo(
+    () => grievances.filter((g) => g.status === 'Resolved' && !g.satisfaction),
     [grievances],
   )
 
@@ -56,6 +69,10 @@ export default function DashboardPage() {
     () => (selectedStat ? grievances.filter(selectedStat.filter) : []),
     [grievances, selectedStat],
   )
+
+  if (!user) return null
+
+  const initials = `${user.firstName[0] ?? ''}${user.lastName[0] ?? ''}`.toUpperCase()
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
@@ -72,9 +89,20 @@ export default function DashboardPage() {
       </motion.div>
 
       <motion.div variants={item} className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Hi {employee?.name.split(' ')[0]}, welcome back</h1>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Here's what's happening with your grievances.</p>
+        <div className="flex items-center gap-3">
+          {user.profilePhoto ? (
+            <img src={user.profilePhoto} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover" />
+          ) : (
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-600 text-sm font-semibold text-white">
+              {initials}
+            </span>
+          )}
+          <div>
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Hi {user.firstName}, welcome back</h1>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              {user.employeeId} · {user.department.name}
+            </p>
+          </div>
         </div>
         <Link
           to="/grievances/new"
@@ -139,9 +167,9 @@ export default function DashboardPage() {
                     <div className="min-w-0">
                       <p className="truncate font-medium text-slate-800 dark:text-slate-200">{grievance.subject}</p>
                       <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <CategoryChip category={grievance.category} />
+                        <CategoryChip category={grievance.category.categoryName} />
                         <span className="text-xs text-slate-400 dark:text-slate-500">
-                          {grievance.id} · {timeAgo(grievance.updatedAt)}
+                          {grievance.ticketNumber} · {timeAgo(grievance.updatedAt)}
                         </span>
                       </div>
                     </div>
@@ -157,37 +185,91 @@ export default function DashboardPage() {
         )}
       </AnimatePresence>
 
-      <motion.div variants={item} className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-          <h2 className="font-semibold text-slate-900 dark:text-slate-100">Recent Grievances</h2>
-          <Link to="/grievances" className="text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300">
-            View all
-          </Link>
+      {pendingActions.length > 0 && (
+        <motion.div
+          variants={item}
+          className="rounded-xl border border-amber-200 bg-amber-50/50 dark:border-amber-500/30 dark:bg-amber-500/10"
+        >
+          <div className="border-b border-amber-200 px-5 py-4 dark:border-amber-500/30">
+            <h2 className="font-semibold text-amber-900 dark:text-amber-200">Pending Actions</h2>
+            <p className="mt-0.5 text-sm text-amber-700 dark:text-amber-300/80">
+              These grievances were resolved — rate the resolution to close them out.
+            </p>
+          </div>
+          <ul className="divide-y divide-amber-100 dark:divide-amber-500/20">
+            {pendingActions.map((grievance) => (
+              <li key={grievance.id}>
+                <Link
+                  to={`/grievances/${grievance.id}`}
+                  className="flex items-center justify-between px-5 py-3 text-sm transition-colors hover:bg-amber-100/40 dark:hover:bg-amber-500/10"
+                >
+                  <span className="font-medium text-slate-800 dark:text-slate-200">
+                    {grievance.ticketNumber} · {grievance.subject}
+                  </span>
+                  <span className="font-medium text-amber-700 dark:text-amber-300">Rate resolution →</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </motion.div>
+      )}
+
+      <motion.div variants={item} className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+            <h2 className="font-semibold text-slate-900 dark:text-slate-100">Recent Grievances</h2>
+            <Link to="/grievances" className="text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300">
+              View all
+            </Link>
+          </div>
+          <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+            {grievances.slice(0, 5).map((grievance) => (
+              <li key={grievance.id}>
+                <Link
+                  to={`/grievances/${grievance.id}`}
+                  className="flex flex-col gap-2 px-5 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-slate-800 dark:text-slate-200">{grievance.subject}</p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <CategoryChip category={grievance.category.categoryName} />
+                      <span className="text-xs text-slate-400 dark:text-slate-500">
+                        {grievance.ticketNumber} · {timeAgo(grievance.updatedAt)}
+                      </span>
+                    </div>
+                  </div>
+                  <StatusBadge status={grievance.status} />
+                </Link>
+              </li>
+            ))}
+            {grievances.length === 0 && (
+              <li className="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">No grievances submitted yet.</li>
+            )}
+          </ul>
         </div>
-        <ul className="divide-y divide-slate-100 dark:divide-slate-800">
-          {grievances.slice(0, 5).map((grievance) => (
-            <li key={grievance.id}>
-              <Link
-                to={`/grievances/${grievance.id}`}
-                className="flex flex-col gap-2 px-5 py-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="min-w-0">
-                  <p className="truncate font-medium text-slate-800 dark:text-slate-200">{grievance.subject}</p>
-                  <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <CategoryChip category={grievance.category} />
-                    <span className="text-xs text-slate-400 dark:text-slate-500">
-                      {grievance.id} · {timeAgo(grievance.updatedAt)}
-                    </span>
+
+        <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          <div className="border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+            <h2 className="font-semibold text-slate-900 dark:text-slate-100">Recent Notifications</h2>
+          </div>
+          <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+            {notifications.map((n) => (
+              <li key={n.id} className="px-5 py-4">
+                <div className="flex items-start gap-2">
+                  {!n.isRead && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-600" />}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{n.title}</p>
+                    <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{n.message}</p>
+                    <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{timeAgo(n.createdAt)}</p>
                   </div>
                 </div>
-                <StatusBadge status={grievance.status} />
-              </Link>
-            </li>
-          ))}
-          {grievances.length === 0 && (
-            <li className="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">No grievances submitted yet.</li>
-          )}
-        </ul>
+              </li>
+            ))}
+            {notifications.length === 0 && (
+              <li className="px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-500">No notifications yet.</li>
+            )}
+          </ul>
+        </div>
       </motion.div>
     </motion.div>
   )

@@ -1,0 +1,421 @@
+openapi: 3.0.3
+info:
+  title: Dalmia Rajgangpur Grievance Portal API
+  description: >
+    REST API for the Dalmia Cement (Bharat) Limited – Rajgangpur Plant
+    Employee Grievance Management Portal. Authentication uses an httpOnly
+    JWT cookie set by /api/auth/login.
+  version: 1.0.0
+servers:
+  - url: /api
+tags:
+  - name: Auth
+  - name: Reference Data
+  - name: Grievances
+  - name: Notifications
+  - name: Admin
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: dalmia_grievance_token
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        employeeId: { type: string }
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string, format: email }
+        phoneNumber: { type: string, nullable: true }
+        department:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            name: { type: string }
+        role: { type: string, enum: [Employee, Department Admin, Super Admin] }
+        plant: { type: string }
+        profilePhoto: { type: string, nullable: true }
+        accountStatus: { type: string, enum: [Active, Suspended, Pending] }
+        createdAt: { type: string, format: date-time }
+        lastLogin: { type: string, format: date-time, nullable: true }
+    Grievance:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ticketNumber: { type: string, example: GRV-1001 }
+        subject: { type: string }
+        description: { type: string }
+        priority: { type: string, enum: [Low, Medium, High, Critical] }
+        status: { type: string, enum: [Open, InProgress, Resolved, Closed] }
+        reopenCount: { type: integer }
+        createdAt: { type: string, format: date-time }
+        resolvedAt: { type: string, format: date-time, nullable: true }
+        closedAt: { type: string, format: date-time, nullable: true }
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        issues: { type: array, items: { type: object } }
+
+security:
+  - cookieAuth: []
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new employee account
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [employeeId, firstName, lastName, email, departmentId, password, confirmPassword]
+              properties:
+                employeeId: { type: string }
+                firstName: { type: string }
+                lastName: { type: string }
+                email: { type: string, format: email }
+                phoneNumber: { type: string }
+                departmentId: { type: string, format: uuid }
+                password: { type: string, format: password }
+                confirmPassword: { type: string, format: password }
+      responses:
+        '201':
+          description: Registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+        '400': { description: Validation error, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '409': { description: Employee ID or email already registered }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in with Employee ID or email
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifier, password]
+              properties:
+                identifier: { type: string, description: Employee ID or company email }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: Logged in — sets an httpOnly session cookie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+        '401': { description: Invalid credentials }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Log out (clears the session cookie)
+      responses:
+        '200': { description: Logged out }
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get the current logged-in user's profile
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+        '401': { description: Not authenticated }
+    patch:
+      tags: [Auth]
+      summary: Update the current user's profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName: { type: string }
+                lastName: { type: string }
+                phoneNumber: { type: string }
+                profilePhoto: { type: string, format: uri }
+      responses:
+        '200': { description: Updated profile }
+
+  /auth/change-password:
+    post:
+      tags: [Auth]
+      summary: Change the current user's password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword: { type: string, format: password }
+                newPassword: { type: string, format: password }
+      responses:
+        '200': { description: Password changed }
+        '400': { description: Current password incorrect or new password too weak }
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Request a password reset OTP by email
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200': { description: OTP sent (always 200, to avoid leaking which emails are registered) }
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Reset password using the emailed OTP
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, otp, newPassword]
+              properties:
+                email: { type: string, format: email }
+                otp: { type: string, minLength: 6, maxLength: 6 }
+                newPassword: { type: string, format: password }
+      responses:
+        '200': { description: Password reset }
+        '400': { description: Invalid or expired code }
+
+  /departments:
+    get:
+      tags: [Reference Data]
+      summary: List departments (for registration/grievance forms)
+      security: []
+      responses:
+        '200': { description: List of departments }
+
+  /categories:
+    get:
+      tags: [Reference Data]
+      summary: List grievance categories with sub-categories and routed department
+      security: []
+      responses:
+        '200': { description: List of categories }
+
+  /grievances:
+    get:
+      tags: [Grievances]
+      summary: List grievances (own tickets for Employees; department/all for admins)
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [Open, InProgress, Resolved, Closed] }
+        - in: query
+          name: departmentId
+          schema: { type: string, format: uuid }
+        - in: query
+          name: categoryId
+          schema: { type: string, format: uuid }
+        - in: query
+          name: priority
+          schema: { type: string, enum: [Low, Medium, High, Critical] }
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: List of grievances
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  grievances:
+                    type: array
+                    items: { $ref: '#/components/schemas/Grievance' }
+    post:
+      tags: [Grievances]
+      summary: Submit a new grievance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [categoryId, subcategoryId, subject, description]
+              properties:
+                categoryId: { type: string, format: uuid }
+                subcategoryId: { type: string, format: uuid }
+                subject: { type: string }
+                description: { type: string }
+                dateOfIncident: { type: string, format: date }
+                personsInvolved: { type: string }
+                isConfidential: { type: boolean }
+                preferredResolution: { type: string }
+                priority: { type: string, enum: [Low, Medium, High, Critical] }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  grievance: { $ref: '#/components/schemas/Grievance' }
+
+  /grievances/{id}:
+    get:
+      tags: [Grievances]
+      summary: Get a single grievance (owner or authorized admin only)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Grievance detail }
+        '403': { description: Not authorized to view this grievance }
+        '404': { description: Not found }
+    patch:
+      tags: [Grievances]
+      summary: Update status/assignment/priority (Department Admin / Super Admin only)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string, enum: [Open, InProgress, Resolved, Closed] }
+                resolution: { type: string }
+                assignedAdminId: { type: string, format: uuid, nullable: true }
+                priority: { type: string, enum: [Low, Medium, High, Critical] }
+      responses:
+        '200': { description: Updated grievance }
+        '403': { description: Not authorized }
+
+  /grievances/{id}/comments:
+    post:
+      tags: [Grievances]
+      summary: Add a comment to a grievance
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [comment]
+              properties:
+                comment: { type: string }
+      responses:
+        '201': { description: Comment added }
+
+  /grievances/{id}/satisfaction:
+    post:
+      tags: [Grievances]
+      summary: Submit satisfaction rating for a Resolved grievance (closes it)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                feedback: { type: string }
+      responses:
+        '200': { description: Grievance closed with feedback }
+        '400': { description: Grievance is not in Resolved status }
+
+  /grievances/{id}/reopen:
+    post:
+      tags: [Grievances]
+      summary: Reopen a Resolved or Closed grievance (owner only)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Grievance reopened, reopenCount incremented }
+        '400': { description: Grievance is not Resolved/Closed }
+
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: List the current user's notifications (most recent 50)
+      responses:
+        '200': { description: List of notifications }
+
+  /notifications/{id}:
+    patch:
+      tags: [Notifications]
+      summary: Mark a single notification as read
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Notification marked read }
+
+  /notifications/read-all:
+    post:
+      tags: [Notifications]
+      summary: Mark all of the current user's notifications as read
+      responses:
+        '200': { description: All notifications marked read }
+
+  /admin/audit-logs:
+    get:
+      tags: [Admin]
+      summary: List recent audit log entries (Super Admin only)
+      responses:
+        '200': { description: List of audit log entries }
+        '403': { description: Not authorized (requires Super Admin role) }

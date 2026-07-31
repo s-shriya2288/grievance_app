@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { PASSWORD_REQUIREMENTS, isStrongPassword } from '../auth/password.js'
 
-const strongPassword = z.string().min(8).max(72).refine(isStrongPassword, PASSWORD_REQUIREMENTS)
+export const strongPassword = z.string().min(8).max(72).refine(isStrongPassword, PASSWORD_REQUIREMENTS)
 
 export const registerSchema = z
   .object({
@@ -41,8 +41,21 @@ export const changePasswordSchema = z.object({
 })
 
 export const updateProfileSchema = z.object({
+  employeeId: z.string().trim().min(2).max(30).optional(),
   firstName: z.string().trim().min(1).max(60).optional(),
   lastName: z.string().trim().min(1).max(60).optional(),
   phoneNumber: z.string().trim().min(7).max(20).optional(),
   profilePhoto: z.string().url().optional(),
 })
+
+export const createAdminSchema = z
+  .object({
+    employeeId: z.string().trim().min(2).max(30),
+    firstName: z.string().trim().min(1).max(60),
+    lastName: z.string().trim().min(1).max(60),
+    email: z.string().trim().toLowerCase().email(),
+    phoneNumber: z.string().trim().min(7).max(20).optional(),
+    departmentId: z.string().uuid('Select a valid department.'),
+    role: z.enum(['Department Admin', 'Super Admin']),
+    password: strongPassword,
+  })

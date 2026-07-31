@@ -10,6 +10,7 @@ const inputClass =
 
 function EditProfileForm() {
   const { user, updateProfile } = useAuth()
+  const [employeeId, setEmployeeId] = useState(user?.employeeId ?? '')
   const [firstName, setFirstName] = useState(user?.firstName ?? '')
   const [lastName, setLastName] = useState(user?.lastName ?? '')
   const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber ?? '')
@@ -21,7 +22,12 @@ function EditProfileForm() {
     setSaving(true)
     setMessage(null)
     try {
-      await updateProfile({ firstName: firstName.trim(), lastName: lastName.trim(), phoneNumber: phoneNumber.trim() || undefined })
+      await updateProfile({
+        employeeId: employeeId.trim(),
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        phoneNumber: phoneNumber.trim() || undefined,
+      })
       setMessage({ type: 'success', text: 'Profile updated.' })
     } catch (err) {
       setMessage({ type: 'error', text: err instanceof ApiError ? err.message : 'Could not update profile.' })
@@ -34,6 +40,10 @@ function EditProfileForm() {
     <form onSubmit={handleSubmit} className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
       <h2 className="mb-4 font-semibold text-slate-900 dark:text-slate-100">Update Profile</h2>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="sm:col-span-2">
+          <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Employee ID (used to sign in)</label>
+          <input value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={inputClass} />
+        </div>
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">First Name</label>
           <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClass} />

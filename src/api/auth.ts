@@ -28,7 +28,13 @@ export function fetchMe() {
   return api.get<{ user: UserProfile }>('/api/auth/me')
 }
 
-export function updateProfile(input: { firstName?: string; lastName?: string; phoneNumber?: string; profilePhoto?: string }) {
+export function updateProfile(input: {
+  employeeId?: string
+  firstName?: string
+  lastName?: string
+  phoneNumber?: string
+  profilePhoto?: string
+}) {
   return api.patch<{ user: UserProfile }>('/api/auth/me', input)
 }
 

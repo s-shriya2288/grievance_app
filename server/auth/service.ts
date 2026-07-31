@@ -6,13 +6,14 @@ import { generateOtp, hashOtp, otpMatches, OTP_TTL_MINUTES } from './otp.js'
 import { sendEmail } from '../email.js'
 import { otpEmailTemplate } from '../email/templates.js'
 import { logAudit } from '../audit.js'
-import type { registerSchema, updateProfileSchema } from '../validation/auth.js'
+import type { registerSchema, updateProfileSchema, createAdminSchema } from '../validation/auth.js'
 import type { z } from 'zod'
 
 const userWithRelations = { role: true, department: true } as const
 
 export type RegisterInput = z.infer<typeof registerSchema>
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
+export type CreateAdminInput = z.infer<typeof createAdminSchema>
 
 export async function registerUser(input: RegisterInput, ipAddress: string | null) {
   const [existingByEmployeeId, existingByEmail, department, role] = await Promise.all([
@@ -141,5 +142,55 @@ export async function getUserProfile(userId: string) {
 }
 
 export async function updateUserProfile(userId: string, input: UpdateProfileInput) {
+  if (input.employeeId) {
+    const existing = await prisma.user.findUnique({ where: { employeeId: input.employeeId } })
+    if (existing && existing.id !== userId) {
+      throw new AppError('This Employee ID is already taken.', 409)
+    }
+  }
   return prisma.user.update({ where: { id: userId }, data: input, include: userWithRelations })
+}
+
+const ADMIN_ROLES = ['Department Admin', 'Super Admin']
+
+export async function listAdminUsers() {
+  return prisma.user.findMany({
+    where: { role: { roleName: { in: ADMIN_ROLES } } },
+    include: userWithRelations,
+    orderBy: { createdAt: 'asc' },
+  })
+}
+
+export async function createAdminUser(input: CreateAdminInput, creatorId: string, ipAddress: string | null) {
+  const [existingByEmployeeId, existingByEmail, department, role] = await Promise.all([
+    prisma.user.findUnique({ where: { employeeId: input.employeeId } }),
+    prisma.user.findUnique({ where: { email: input.email } }),
+    prisma.department.findUnique({ where: { id: input.departmentId } }),
+    prisma.role.findUnique({ where: { roleName: input.role } }),
+  ])
+
+  if (existingByEmployeeId) throw new AppError('This Employee ID is already registered.', 409)
+  if (existingByEmail) throw new AppError('This email is already registered.', 409)
+  if (!department) throw new AppError('Select a valid department.', 400)
+  if (!role) throw new AppError(`The ${input.role} role has not been seeded. Run \`npm run db:seed\`.`, 500)
+
+  const passwordHash = await hashPassword(input.password)
+
+  const user = await prisma.user.create({
+    data: {
+      employeeId: input.employeeId,
+      firstName: input.firstName,
+      lastName: input.lastName,
+      email: input.email,
+      phoneNumber: input.phoneNumber || null,
+      passwordHash,
+      departmentId: department.id,
+      roleId: role.id,
+    },
+    include: userWithRelations,
+  })
+
+  await logAudit({ userId: creatorId, action: 'ADMIN_CREATED', entity: 'User', entityId: user.id, ipAddress })
+
+  return user
 }

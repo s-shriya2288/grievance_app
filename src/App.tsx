@@ -7,6 +7,7 @@ import AdminProtectedRoute from './components/AdminProtectedRoute'
 import AppLayout from './components/layout/AppLayout'
 import AdminLayout from './components/layout/AdminLayout'
 import LoginPage from './pages/LoginPage'
+import AdminLoginPage from './pages/AdminLoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
@@ -30,7 +31,7 @@ export default function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+              <Route path="/admin/login" element={<AdminLoginPage />} />
 
               <Route
                 element={

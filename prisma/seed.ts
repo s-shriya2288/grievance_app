@@ -1,4 +1,5 @@
 import { prisma } from '../server/db.js'
+import { hashPassword } from '../server/auth/password.js'
 import {
   DEPARTMENTS,
   GRIEVANCE_CATEGORIES,
@@ -7,6 +8,9 @@ import {
 } from '../shared/taxonomy.js'
 
 const ROLES = ['Employee', 'Department Admin', 'Super Admin'] as const
+
+const MAIN_ADMIN_EMPLOYEE_ID = 'employee_admin'
+const MAIN_ADMIN_PASSWORD = '12345678'
 
 async function main() {
   console.log('Seeding departments...')
@@ -50,6 +54,27 @@ async function main() {
         create: { categoryId: category.id, subcategoryName },
       })
     }
+  }
+
+  console.log('Seeding main admin account...')
+  const existingMainAdmin = await prisma.user.findUnique({ where: { employeeId: MAIN_ADMIN_EMPLOYEE_ID } })
+  if (!existingMainAdmin) {
+    const superAdminRole = await prisma.role.findUniqueOrThrow({ where: { roleName: 'Super Admin' } })
+    const administrationDeptId = departmentIdByName.get('Administration')
+    if (!administrationDeptId) throw new Error('Administration department was not seeded.')
+
+    await prisma.user.create({
+      data: {
+        employeeId: MAIN_ADMIN_EMPLOYEE_ID,
+        firstName: 'Main',
+        lastName: 'Admin',
+        email: 'admin@dalmiabharat.com',
+        passwordHash: await hashPassword(MAIN_ADMIN_PASSWORD),
+        departmentId: administrationDeptId,
+        roleId: superAdminRole.id,
+      },
+    })
+    console.log(`Created main admin "${MAIN_ADMIN_EMPLOYEE_ID}" — change this password after first login.`)
   }
 
   console.log(

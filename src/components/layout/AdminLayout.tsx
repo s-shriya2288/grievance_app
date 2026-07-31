@@ -78,6 +78,32 @@ export default function AdminLayout() {
               )}
             </NavLink>
           )}
+          {user?.role === 'Super Admin' && (
+            <NavLink
+              to="/admin/users"
+              className={({ isActive }) =>
+                `relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'text-orange-700 dark:text-orange-300'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <motion.span
+                      layoutId="admin-nav-active-pill"
+                      className="absolute inset-0 rounded-lg bg-accent-orange-light dark:bg-orange-500/15"
+                      transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                    />
+                  )}
+                  <span className="relative z-10 w-5 text-center">🛡️</span>
+                  <span className="relative z-10">Manage Admins</span>
+                </>
+              )}
+            </NavLink>
+          )}
         </nav>
         <div className="border-t border-slate-200 p-4 text-xs text-slate-400 dark:border-slate-800 dark:text-slate-500">
           Dalmia Cement (Bharat) Limited

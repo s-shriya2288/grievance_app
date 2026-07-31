@@ -1,4 +1,5 @@
 import { api } from './client'
+import type { UserProfile } from '../types/api'
 
 export interface AuditLogEntry {
   id: string
@@ -13,4 +14,23 @@ export interface AuditLogEntry {
 
 export function listAuditLogs() {
   return api.get<{ logs: AuditLogEntry[] }>('/api/admin/audit-logs')
+}
+
+export interface CreateAdminInput {
+  employeeId: string
+  firstName: string
+  lastName: string
+  email: string
+  phoneNumber?: string
+  departmentId: string
+  role: 'Department Admin' | 'Super Admin'
+  password: string
+}
+
+export function listAdminUsers() {
+  return api.get<{ admins: UserProfile[] }>('/api/admin/users')
+}
+
+export function createAdminUser(input: CreateAdminInput) {
+  return api.post<{ user: UserProfile }>('/api/admin/users', input)
 }

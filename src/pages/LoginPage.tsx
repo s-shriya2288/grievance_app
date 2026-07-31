@@ -153,6 +153,12 @@ export default function LoginPage() {
               Register here
             </Link>
           </p>
+          <p className="mt-2 text-center text-sm text-slate-500 dark:text-slate-400">
+            HR Admin?{' '}
+            <Link to="/admin/login" className="font-medium text-accent-orange hover:underline">
+              Sign in here
+            </Link>
+          </p>
         </motion.div>
       </div>
       <div className="relative z-10">

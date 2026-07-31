@@ -35,3 +35,6 @@ android/build
 
 # Claude Code local settings
 .claude/settings.local.json
+.vercel
+.env*
+!.env.example

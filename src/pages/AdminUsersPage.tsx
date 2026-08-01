@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { useAuth } from '../context/AuthContext'
@@ -126,15 +126,21 @@ export default function AdminUsersPage() {
   const [departments, setDepartments] = useState<DepartmentOption[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const hasFetchedRef = useRef(false)
 
   useEffect(() => {
     if (currentUser?.role !== 'Super Admin') return
+    if (hasFetchedRef.current) return
+    hasFetchedRef.current = true
     Promise.all([listAdminUsers(), fetchDepartments()])
       .then(([adminsRes, deptRes]) => {
         setAdmins(adminsRes.admins)
         setDepartments(deptRes.departments)
       })
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load admins.'))
+      .catch((err) => {
+        hasFetchedRef.current = false
+        setError(err instanceof Error ? err.message : 'Failed to load admins.')
+      })
       .finally(() => setIsLoading(false))
   }, [currentUser])
 

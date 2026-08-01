@@ -126,6 +126,13 @@ export default function AdminLayout() {
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={() => navigate('/admin/profile')}
+              className="rounded-lg border border-slate-200 px-3.5 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              My Profile
+            </button>
+            <button
+              type="button"
               onClick={toggleTheme}
               aria-label="Toggle dark mode"
               className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"

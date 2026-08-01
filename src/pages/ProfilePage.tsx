@@ -207,13 +207,15 @@ export default function ProfilePage() {
       <EditProfileForm />
       <ChangePasswordForm />
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Grievance Summary</h2>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          You have submitted <span className="font-medium text-slate-800 dark:text-slate-200">{grievances.length}</span> grievance
-          {grievances.length === 1 ? '' : 's'} in total.
-        </p>
-      </div>
+      {user.role === 'Employee' && (
+        <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="font-semibold text-slate-900 dark:text-slate-100">Grievance Summary</h2>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            You have submitted <span className="font-medium text-slate-800 dark:text-slate-200">{grievances.length}</span> grievance
+            {grievances.length === 1 ? '' : 's'} in total.
+          </p>
+        </div>
+      )}
     </motion.div>
   )
 }

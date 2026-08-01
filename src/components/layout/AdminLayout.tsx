@@ -2,6 +2,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
+import { AdminDataProvider } from '../../context/AdminDataContext'
 import Logo from '../Logo'
 import Footer from '../Footer'
 
@@ -158,18 +159,20 @@ export default function AdminLayout() {
         </header>
 
         <main className="flex flex-1 flex-col overflow-y-auto">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8 md:py-8"
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          <AdminDataProvider>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8 md:py-8"
+              >
+                <Outlet />
+              </motion.div>
+            </AnimatePresence>
+          </AdminDataProvider>
           <Footer />
         </main>
       </div>

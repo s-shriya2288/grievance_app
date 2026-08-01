@@ -1,40 +1,24 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { useAuth } from '../context/AuthContext'
-import { listAuditLogs, type AuditLogEntry } from '../api/admin'
+import { useAdminData } from '../context/AdminDataContext'
 import { formatDateTime } from '../utils/format'
 
 export default function AuditLogPage() {
   const { user } = useAuth()
-  const [logs, setLogs] = useState<AuditLogEntry[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { auditLogs, isLoading, error } = useAdminData()
   const [search, setSearch] = useState('')
-  const hasFetchedRef = useRef(false)
-
-  useEffect(() => {
-    if (user?.role !== 'Super Admin') return
-    if (hasFetchedRef.current) return
-    hasFetchedRef.current = true
-    listAuditLogs()
-      .then(({ logs }) => setLogs(logs))
-      .catch((err) => {
-        hasFetchedRef.current = false
-        setError(err instanceof Error ? err.message : 'Failed to load audit log.')
-      })
-      .finally(() => setIsLoading(false))
-  }, [user])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return logs
-    return logs.filter((log) =>
+    if (!q) return auditLogs
+    return auditLogs.filter((log) =>
       `${log.action} ${log.entity} ${log.entityId ?? ''} ${log.user ? `${log.user.firstName} ${log.user.lastName} ${log.user.employeeId}` : ''}`
         .toLowerCase()
         .includes(q),
     )
-  }, [logs, search])
+  }, [auditLogs, search])
 
   if (user && user.role !== 'Super Admin') {
     return <Navigate to="/admin" replace />

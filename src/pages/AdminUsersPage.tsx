@@ -1,9 +1,9 @@
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { useAuth } from '../context/AuthContext'
-import { listAdminUsers, createAdminUser, type CreateAdminInput } from '../api/admin'
-import { fetchDepartments } from '../api/reference'
+import { useAdminData } from '../context/AdminDataContext'
+import { createAdminUser, type CreateAdminInput } from '../api/admin'
 import { ApiError } from '../api/client'
 import { formatDate } from '../utils/format'
 import type { DepartmentOption, UserProfile } from '../types/api'
@@ -122,27 +122,7 @@ function CreateAdminForm({ departments, onCreated }: { departments: DepartmentOp
 
 export default function AdminUsersPage() {
   const { user: currentUser } = useAuth()
-  const [admins, setAdmins] = useState<UserProfile[]>([])
-  const [departments, setDepartments] = useState<DepartmentOption[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const hasFetchedRef = useRef(false)
-
-  useEffect(() => {
-    if (currentUser?.role !== 'Super Admin') return
-    if (hasFetchedRef.current) return
-    hasFetchedRef.current = true
-    Promise.all([listAdminUsers(), fetchDepartments()])
-      .then(([adminsRes, deptRes]) => {
-        setAdmins(adminsRes.admins)
-        setDepartments(deptRes.departments)
-      })
-      .catch((err) => {
-        hasFetchedRef.current = false
-        setError(err instanceof Error ? err.message : 'Failed to load admins.')
-      })
-      .finally(() => setIsLoading(false))
-  }, [currentUser])
+  const { admins, departments, isLoading, error, addAdmin } = useAdminData()
 
   if (currentUser && currentUser.role !== 'Super Admin') {
     return <Navigate to="/admin" replace />
@@ -163,9 +143,7 @@ export default function AdminUsersPage() {
         </p>
       )}
 
-      {departments.length > 0 && (
-        <CreateAdminForm departments={departments} onCreated={(u) => setAdmins((prev) => [...prev, u])} />
-      )}
+      {departments.length > 0 && <CreateAdminForm departments={departments} onCreated={addAdmin} />}
 
       <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">

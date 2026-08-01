@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { useAuth } from '../context/AuthContext'
@@ -11,12 +11,18 @@ export default function AuditLogPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  const hasFetchedRef = useRef(false)
 
   useEffect(() => {
     if (user?.role !== 'Super Admin') return
+    if (hasFetchedRef.current) return
+    hasFetchedRef.current = true
     listAuditLogs()
       .then(({ logs }) => setLogs(logs))
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load audit log.'))
+      .catch((err) => {
+        hasFetchedRef.current = false
+        setError(err instanceof Error ? err.message : 'Failed to load audit log.')
+      })
       .finally(() => setIsLoading(false))
   }, [user])
 

@@ -59,7 +59,7 @@ npm run dev:all         # runs the Vite dev server + the API backend together
 
 Open the printed local URL, register a new employee account, then sign in. Without an
 `ANTHROPIC_API_KEY`, AI triage falls back to a simple rule-based priority so the app still works
-end-to-end. Without a `RESEND_API_KEY`, password-reset OTPs are printed to the server console and
+end-to-end. Without a `BREVO_API_KEY`, password-reset OTPs are printed to the server console and
 returned in the API response instead of emailed.
 
 ### Database setup
@@ -97,8 +97,9 @@ update users set role_id = (select id from roles where name = 'Super Admin') whe
 | `DATABASE_URL` | Yes | PostgreSQL connection string (Supabase/Neon) |
 | `JWT_SECRET` | Yes | Signs auth session tokens — keep this secret |
 | `JWT_EXPIRES_IN` | No | Token lifetime, default `7d` |
-| `RESEND_API_KEY` | No | Enables real emails (OTP, notifications) via [Resend](https://resend.com/) |
-| `RESEND_FROM_EMAIL` | No | From-address for emails, e.g. `Dalmia Grievance Portal <onboarding@resend.dev>` |
+| `BREVO_API_KEY` | No | Enables real emails (OTP, notifications) via [Brevo](https://www.brevo.com/) |
+| `BREVO_FROM_EMAIL` | No | From-address for emails, default `no-reply@dalmia-rajgangpur-grievance.app` |
+| `BREVO_FROM_NAME` | No | From-name for emails, default `Dalmia Rajgangpur Grievance Portal` |
 | `APP_URL` | No | Used in email templates for links/branding, default `http://localhost:5173` |
 | `BLOB_READ_WRITE_TOKEN` | No | Enables grievance attachment uploads via [Vercel Blob](https://vercel.com/docs/storage/vercel-blob) — create a Blob store under a Vercel project's Storage tab to get one |
 | `ANTHROPIC_API_KEY` | No | Enables real AI priority triage via Claude |

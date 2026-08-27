@@ -159,6 +159,11 @@ export default function LoginPage() {
               Sign in here
             </Link>
           </p>
+          <p className="mt-2 text-center text-sm text-slate-500 dark:text-slate-400">
+            <Link to="/download" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
+              Get the Android app
+            </Link>
+          </p>
         </motion.div>
       </div>
       <div className="relative z-10">

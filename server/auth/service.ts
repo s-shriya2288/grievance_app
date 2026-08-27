@@ -4,7 +4,7 @@ import { hashPassword, verifyPassword } from './password.js'
 import { signAuthToken } from './jwt.js'
 import { generateOtp, hashOtp, otpMatches, OTP_TTL_MINUTES } from './otp.js'
 import { sendEmail } from '../email.js'
-import { otpEmailTemplate } from '../email/templates.js'
+import { otpEmailTemplate, welcomeEmailTemplate } from '../email/templates.js'
 import { logAudit } from '../audit.js'
 import type { registerSchema, updateProfileSchema, createAdminSchema } from '../validation/auth.js'
 import type { z } from 'zod'
@@ -45,6 +45,12 @@ export async function registerUser(input: RegisterInput, ipAddress: string | nul
   })
 
   await logAudit({ userId: user.id, action: 'REGISTER', entity: 'User', entityId: user.id, ipAddress })
+
+  await sendEmail({
+    to: user.email,
+    subject: 'Welcome to the Dalmia Rajgangpur Grievance Portal',
+    html: welcomeEmailTemplate({ firstName: user.firstName, employeeId: user.employeeId }),
+  })
 
   return user
 }
@@ -98,9 +104,11 @@ export async function requestPasswordReset(email: string): Promise<{ devOtp?: st
 
   await logAudit({ userId: user.id, action: 'PASSWORD_RESET_REQUESTED', entity: 'User', entityId: user.id })
 
-  // Only echo the OTP back when no email provider is configured, so the flow
-  // stays testable in dev/demo without real email delivery.
-  return result.sent ? {} : { devOtp: otp }
+  // Only echo the OTP back when no email provider is configured at all, so the
+  // flow stays testable in dev/demo without real email delivery. A genuine
+  // send failure (provider configured but errored) must NOT leak the OTP —
+  // it just fails silently from the caller's perspective and can be retried.
+  return result.skipped ? { devOtp: otp } : {}
 }
 
 export async function resetPassword(email: string, otp: string, newPassword: string): Promise<void> {
@@ -191,6 +199,12 @@ export async function createAdminUser(input: CreateAdminInput, creatorId: string
   })
 
   await logAudit({ userId: creatorId, action: 'ADMIN_CREATED', entity: 'User', entityId: user.id, ipAddress })
+
+  await sendEmail({
+    to: user.email,
+    subject: 'Welcome to the Dalmia Rajgangpur Grievance Portal',
+    html: welcomeEmailTemplate({ firstName: user.firstName, employeeId: user.employeeId }),
+  })
 
   return user
 }

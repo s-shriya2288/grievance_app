@@ -3,7 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import { prioritizeGrievance, type PrioritizeInput } from './prioritize.js'
 import { sendError } from './httpError.js'
-import { getClientIp } from './middleware/auth.js'
+import { getClientIp, requireAuth } from './middleware/auth.js'
 import {
   handleRegister,
   handleLogin,
@@ -39,6 +39,11 @@ app.get('/api/health', (_req, res) => {
 })
 
 app.post('/api/prioritize', async (req, res) => {
+  try {
+    requireAuth(req.headers.cookie ?? null)
+  } catch (error) {
+    return sendError(res, error)
+  }
   const input = req.body as PrioritizeInput
   if (!input?.subject || !input?.description) {
     return res.status(400).json({ error: 'subject and description are required' })
@@ -48,6 +53,11 @@ app.post('/api/prioritize', async (req, res) => {
 })
 
 app.post('/api/prioritize-batch', async (req, res) => {
+  try {
+    requireAuth(req.headers.cookie ?? null)
+  } catch (error) {
+    return sendError(res, error)
+  }
   const items = req.body?.items as Array<PrioritizeInput & { id: string }>
   if (!Array.isArray(items)) {
     return res.status(400).json({ error: 'items must be an array' })

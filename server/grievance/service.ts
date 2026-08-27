@@ -31,6 +31,28 @@ function canAccessGrievance(grievance: { employeeId: string; departmentId: strin
   return false
 }
 
+/**
+ * A confidential submission should hide the employee's identity from
+ * Department Admins (so they can't retaliate against a whistleblower who was
+ * promised anonymity) — only the owning employee and a Super Admin see who
+ * actually filed it.
+ */
+function redactConfidentialEmployee<
+  T extends {
+    isConfidential: boolean
+    employeeId: string
+    employee: { id: string; firstName: string; lastName: string; employeeId: string; email: string }
+  },
+>(grievance: T, requester: RequesterContext): T {
+  if (!grievance.isConfidential) return grievance
+  if (grievance.employeeId === requester.userId) return grievance
+  if (requester.role === 'Super Admin') return grievance
+  return {
+    ...grievance,
+    employee: { ...grievance.employee, firstName: 'Confidential', lastName: 'Submission', employeeId: '—', email: '' },
+  }
+}
+
 export async function createGrievance(employeeId: string, input: CreateGrievanceInput, ipAddress: string | null) {
   const category = await prisma.grievanceCategory.findUnique({ where: { id: input.categoryId } })
   if (!category) throw new AppError('Invalid category.', 400)
@@ -122,7 +144,8 @@ export async function listGrievancesForAdmin(requester: RequesterContext, filter
     }
   }
 
-  return prisma.grievance.findMany({ where, include: fullInclude, orderBy: { createdAt: 'desc' } })
+  const grievances = await prisma.grievance.findMany({ where, include: fullInclude, orderBy: { createdAt: 'desc' } })
+  return grievances.map((g) => redactConfidentialEmployee(g, requester))
 }
 
 export async function getGrievanceById(id: string, requester: RequesterContext) {
@@ -131,7 +154,7 @@ export async function getGrievanceById(id: string, requester: RequesterContext) 
   if (!canAccessGrievance(grievance, requester)) {
     throw new AppError('You do not have access to this grievance.', 403)
   }
-  return grievance
+  return redactConfidentialEmployee(grievance, requester)
 }
 
 export async function updateGrievanceStatus(id: string, requester: RequesterContext, input: UpdateGrievanceStatusInput) {
@@ -150,7 +173,20 @@ export async function updateGrievanceStatus(id: string, requester: RequesterCont
   }
   if (input.resolution !== undefined) data.resolution = input.resolution
   if (input.assignedAdminId !== undefined) {
-    data.assignedAdmin = input.assignedAdminId ? { connect: { id: input.assignedAdminId } } : { disconnect: true }
+    if (input.assignedAdminId) {
+      const targetAdmin = await prisma.user.findUnique({
+        where: { id: input.assignedAdminId },
+        include: { role: true },
+      })
+      const isValidAdmin =
+        targetAdmin &&
+        (targetAdmin.role.roleName === 'Super Admin' ||
+          (targetAdmin.role.roleName === 'Department Admin' && targetAdmin.departmentId === grievance.departmentId))
+      if (!isValidAdmin) throw new AppError('Select a valid admin for this department.', 400)
+      data.assignedAdmin = { connect: { id: input.assignedAdminId } }
+    } else {
+      data.assignedAdmin = { disconnect: true }
+    }
   }
   if (input.priority) data.priority = input.priority
 
@@ -169,7 +205,7 @@ export async function updateGrievanceStatus(id: string, requester: RequesterCont
     })
   }
 
-  return updated
+  return redactConfidentialEmployee(updated, requester)
 }
 
 export async function addComment(grievanceId: string, requester: RequesterContext, comment: string) {

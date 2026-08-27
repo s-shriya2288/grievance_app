@@ -12,6 +12,8 @@ export interface SendEmailInput {
 
 export interface SendEmailResult {
   sent: boolean
+  /** True only when no email provider is configured at all (dev/demo mode) — never true for a genuine send failure. */
+  skipped: boolean
 }
 
 /**
@@ -25,7 +27,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
     await prisma.emailLog.create({
       data: { recipient: input.to, subject: input.subject, status: 'Skipped' },
     })
-    return { sent: false }
+    return { sent: false, skipped: true }
   }
 
   try {
@@ -49,12 +51,12 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
     if (!res.ok) {
       console.error('Brevo email send failed:', res.status, await res.text())
     }
-    return { sent: res.ok }
+    return { sent: res.ok, skipped: false }
   } catch (error) {
     console.error('Failed to send email:', error)
     await prisma.emailLog.create({
       data: { recipient: input.to, subject: input.subject, status: 'Failed' },
     })
-    return { sent: false }
+    return { sent: false, skipped: false }
   }
 }

@@ -19,6 +19,7 @@ import ProfilePage from './pages/ProfilePage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AuditLogPage from './pages/AuditLogPage'
 import AdminUsersPage from './pages/AdminUsersPage'
+import DownloadAppPage from './pages/DownloadAppPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 export default function App() {
@@ -33,6 +34,7 @@ export default function App() {
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route path="/download" element={<DownloadAppPage />} />
 
               <Route
                 element={

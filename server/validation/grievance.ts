@@ -19,6 +19,7 @@ export const updateGrievanceStatusSchema = z.object({
   resolution: z.string().trim().max(2000).optional().nullable(),
   assignedAdminId: z.string().uuid().nullable().optional(),
   priority: z.enum(['Low', 'Medium', 'High', 'Critical']).optional(),
+  departmentId: z.string().uuid('Select a valid department.').optional(),
 })
 
 export const addCommentSchema = z.object({

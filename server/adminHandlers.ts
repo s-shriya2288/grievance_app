@@ -1,7 +1,10 @@
 import { requireAuth, requireRole } from './middleware/auth.js'
 import { prisma } from './db.js'
+import { AppError } from './errors.js'
 import { createAdminSchema } from './validation/auth.js'
+import { updateDepartmentHeadEmailSchema } from './validation/department.js'
 import { createAdminUser, listAdminUsers } from './auth/service.js'
+import { listDepartmentsWithHeadEmail, updateDepartmentHeadEmail } from './department.js'
 import { toUserDto } from './dto/user.js'
 import type { HandlerRequest, HandlerResult } from './http.js'
 
@@ -29,4 +32,21 @@ export async function handleCreateAdmin(req: HandlerRequest): Promise<HandlerRes
   const input = createAdminSchema.parse(req.body)
   const user = await createAdminUser(input, payload.sub, req.ip)
   return { statusCode: 201, body: { user: toUserDto(user) } }
+}
+
+export async function handleListDepartmentsAdmin(req: HandlerRequest): Promise<HandlerResult> {
+  const payload = requireAuth(req.cookieHeader)
+  requireRole(payload, ['Super Admin'])
+  const departments = await listDepartmentsWithHeadEmail()
+  return { statusCode: 200, body: { departments } }
+}
+
+export async function handleUpdateDepartmentHeadEmail(req: HandlerRequest): Promise<HandlerResult> {
+  const payload = requireAuth(req.cookieHeader)
+  requireRole(payload, ['Super Admin'])
+  const id = req.params.id
+  if (!id) throw new AppError('Missing department id.', 400)
+  const input = updateDepartmentHeadEmailSchema.parse(req.body)
+  const department = await updateDepartmentHeadEmail(id, input.headEmail)
+  return { statusCode: 200, body: { department } }
 }

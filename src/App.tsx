@@ -20,6 +20,7 @@ import ProfilePage from './pages/ProfilePage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import AuditLogPage from './pages/AuditLogPage'
 import AdminUsersPage from './pages/AdminUsersPage'
+import AdminDepartmentsPage from './pages/AdminDepartmentsPage'
 import DownloadAppPage from './pages/DownloadAppPage'
 import NotFoundPage from './pages/NotFoundPage'
 
@@ -64,6 +65,7 @@ export default function App() {
                 <Route path="/admin/profile" element={<ProfilePage />} />
                 <Route path="/admin/audit-logs" element={<AuditLogPage />} />
                 <Route path="/admin/users" element={<AdminUsersPage />} />
+                <Route path="/admin/departments" element={<AdminDepartmentsPage />} />
               </Route>
 
               <Route path="*" element={<NotFoundPage />} />

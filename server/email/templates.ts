@@ -45,6 +45,16 @@ export function grievanceNotificationTemplate(title: string, message: string): s
   return shell(title, `<p>${escapeHtml(message)}</p>`)
 }
 
+export function departmentRedirectTemplate(input: { ticketNumber: string; subject: string; departmentName: string }): string {
+  const subject = escapeHtml(input.subject)
+  const departmentName = escapeHtml(input.departmentName)
+  return shell(
+    `Grievance Routed to ${departmentName}`,
+    `<p>Grievance <strong>${input.ticketNumber}</strong> — "${subject}" — has been routed to your department for action.</p>
+     <p><a href="${APP_URL}/admin/login" style="color:#163e91;">Sign in to the Admin Portal →</a></p>`,
+  )
+}
+
 export function welcomeEmailTemplate(input: { firstName: string; employeeId: string }): string {
   const name = escapeHtml(input.firstName)
   const employeeId = escapeHtml(input.employeeId)

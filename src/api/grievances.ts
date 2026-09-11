@@ -47,6 +47,7 @@ export interface UpdateGrievanceStatusInput {
   resolution?: string | null
   assignedAdminId?: string | null
   priority?: GrievancePriority
+  departmentId?: string
 }
 
 export function updateGrievanceStatus(id: string, input: UpdateGrievanceStatusInput) {

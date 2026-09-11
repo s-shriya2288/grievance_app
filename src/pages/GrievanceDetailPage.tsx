@@ -6,8 +6,9 @@ import { useGrievances } from '../context/GrievanceContext'
 import { PriorityBadge, StatusBadge } from '../components/StatusBadge'
 import CategoryChip from '../components/CategoryChip'
 import { ApiError } from '../api/client'
+import { fetchDepartments } from '../api/reference'
 import { formatDate, formatDateTime } from '../utils/format'
-import type { Grievance, GrievanceStatus } from '../types/api'
+import type { DepartmentOption, Grievance, GrievanceStatus } from '../types/api'
 
 const ADMIN_ROLES = ['Department Admin', 'Super Admin']
 const adminStatusOptions: GrievanceStatus[] = ['Open', 'InProgress', 'Resolved']
@@ -16,6 +17,75 @@ const adminStatusLabels: Record<GrievanceStatus, string> = {
   InProgress: 'In Progress',
   Resolved: 'Resolved',
   Closed: 'Closed',
+}
+
+function RedirectDepartmentControl({ grievance }: { grievance: Grievance }) {
+  const { updateStatus } = useGrievances()
+  const [departments, setDepartments] = useState<DepartmentOption[]>([])
+  const [targetDepartmentId, setTargetDepartmentId] = useState('')
+  const [redirecting, setRedirecting] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  useEffect(() => {
+    fetchDepartments()
+      .then(({ departments }) => {
+        const others = departments.filter((d) => d.id !== grievance.department.id)
+        setDepartments(others)
+        if (others[0]) setTargetDepartmentId(others[0].id)
+      })
+      .catch(() => setDepartments([]))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grievance.department.id])
+
+  const handleRedirect = async () => {
+    if (!targetDepartmentId) return
+    setRedirecting(true)
+    setMessage(null)
+    try {
+      await updateStatus(grievance.id, { departmentId: targetDepartmentId })
+      setMessage({ type: 'success', text: 'Grievance redirected.' })
+    } catch (err) {
+      setMessage({ type: 'error', text: err instanceof ApiError ? err.message : 'Could not redirect this grievance.' })
+    } finally {
+      setRedirecting(false)
+    }
+  }
+
+  if (departments.length === 0) return null
+
+  return (
+    <div className="mt-4 border-t border-sky-200 pt-4 dark:border-sky-500/30">
+      <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+        Wrong department? Redirect this grievance
+      </label>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <select
+          value={targetDepartmentId}
+          onChange={(e) => setTargetDepartmentId(e.target.value)}
+          className="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 sm:flex-1"
+        >
+          {departments.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.name}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={handleRedirect}
+          disabled={redirecting}
+          className="shrink-0 rounded-lg border border-sky-300 px-4 py-2 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-sky-500/40 dark:text-sky-300 dark:hover:bg-sky-500/10"
+        >
+          {redirecting ? 'Redirecting…' : '🔀 Redirect'}
+        </button>
+      </div>
+      {message && (
+        <p className={`mt-2 text-xs ${message.type === 'success' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+          {message.text}
+        </p>
+      )}
+    </div>
+  )
 }
 
 function AdminActionsPanel({ grievance }: { grievance: Grievance }) {
@@ -107,6 +177,8 @@ function AdminActionsPanel({ grievance }: { grievance: Grievance }) {
       >
         {saving ? 'Saving…' : saved ? 'Saved ✓' : 'Save Changes'}
       </button>
+
+      <RedirectDepartmentControl grievance={grievance} />
     </motion.div>
   )
 }

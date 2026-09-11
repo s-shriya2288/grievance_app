@@ -27,7 +27,13 @@ import {
 } from './grievance/handlers.js'
 import { handleListNotifications, handleMarkNotificationRead, handleMarkAllNotificationsRead } from './notificationHandlers.js'
 import { handleListDepartments, handleListCategories } from './referenceHandlers.js'
-import { handleListAuditLogs, handleListAdmins, handleCreateAdmin } from './adminHandlers.js'
+import {
+  handleListAuditLogs,
+  handleListAdmins,
+  handleCreateAdmin,
+  handleListDepartmentsAdmin,
+  handleUpdateDepartmentHeadEmail,
+} from './adminHandlers.js'
 import { handleUploadAttachment } from './uploadHandlers.js'
 import type { HandlerRequest, HandlerResult } from './http.js'
 
@@ -122,5 +128,7 @@ app.post('/api/notifications/read-all', adapt(handleMarkAllNotificationsRead))
 app.get('/api/admin/audit-logs', adapt(handleListAuditLogs))
 app.get('/api/admin/users', adapt(handleListAdmins))
 app.post('/api/admin/users', adapt(handleCreateAdmin))
+app.get('/api/admin/departments', adapt(handleListDepartmentsAdmin))
+app.patch('/api/admin/departments/:id', adapt(handleUpdateDepartmentHeadEmail))
 
 app.post('/api/upload', adapt(handleUploadAttachment))

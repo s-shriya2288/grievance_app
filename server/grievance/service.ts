@@ -2,6 +2,8 @@ import { prisma } from '../db.js'
 import { AppError } from '../errors.js'
 import { logAudit } from '../audit.js'
 import { notifyUser } from '../notifications.js'
+import { sendEmail } from '../email.js'
+import { departmentRedirectTemplate } from '../email/templates.js'
 import type { CreateGrievanceInput, ListGrievancesQuery, UpdateGrievanceStatusInput } from './types.js'
 import type { Prisma } from '../../generated/prisma/client.js'
 
@@ -165,6 +167,12 @@ export async function updateGrievanceStatus(id: string, requester: RequesterCont
     throw new AppError('Not authorized.', 403)
   }
 
+  let targetDepartment: { id: string; departmentName: string; headEmail: string | null } | null = null
+  if (input.departmentId !== undefined && input.departmentId !== grievance.departmentId) {
+    targetDepartment = await prisma.department.findUnique({ where: { id: input.departmentId } })
+    if (!targetDepartment) throw new AppError('Select a valid department.', 400)
+  }
+
   const data: Prisma.GrievanceUpdateInput = {}
   if (input.status) {
     data.status = input.status
@@ -189,6 +197,10 @@ export async function updateGrievanceStatus(id: string, requester: RequesterCont
     }
   }
   if (input.priority) data.priority = input.priority
+  if (targetDepartment) {
+    data.department = { connect: { id: targetDepartment.id } }
+    if (input.assignedAdminId === undefined) data.assignedAdmin = { disconnect: true }
+  }
 
   const updated = await prisma.grievance.update({ where: { id }, data, include: fullInclude })
 
@@ -203,6 +215,48 @@ export async function updateGrievanceStatus(id: string, requester: RequesterCont
           : `Your grievance status is now ${input.status}.`,
       type: input.status === 'Resolved' ? 'Resolved' : input.status === 'Closed' ? 'Closed' : 'StatusChanged',
     })
+  }
+
+  if (targetDepartment) {
+    await prisma.grievanceComment.create({
+      data: {
+        grievanceId: id,
+        userId: requester.userId,
+        comment: `🔀 Redirected to ${targetDepartment.departmentName} department.`,
+      },
+    })
+    await logAudit({ userId: requester.userId, action: 'GRIEVANCE_REDIRECTED', entity: 'Grievance', entityId: id })
+
+    await notifyUser(updated.employeeId, {
+      title: `Grievance ${updated.ticketNumber} redirected`,
+      message: `Your grievance has been redirected to the ${targetDepartment.departmentName} team.`,
+      type: 'StatusChanged',
+    })
+
+    const newDeptAdmins = await prisma.user.findMany({
+      where: { departmentId: targetDepartment.id, role: { roleName: { in: ['Department Admin', 'Super Admin'] } } },
+    })
+    await Promise.all(
+      newDeptAdmins.map((admin) =>
+        notifyUser(admin.id, {
+          title: `Grievance redirected to your department: ${updated.ticketNumber}`,
+          message: updated.subject,
+          type: 'Assigned',
+        }),
+      ),
+    )
+
+    if (targetDepartment.headEmail) {
+      await sendEmail({
+        to: targetDepartment.headEmail,
+        subject: `Grievance ${updated.ticketNumber} routed to ${targetDepartment.departmentName}`,
+        html: departmentRedirectTemplate({
+          ticketNumber: updated.ticketNumber,
+          subject: updated.subject,
+          departmentName: targetDepartment.departmentName,
+        }),
+      })
+    }
   }
 
   return redactConfidentialEmployee(updated, requester)

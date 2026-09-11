@@ -34,3 +34,17 @@ export function listAdminUsers() {
 export function createAdminUser(input: CreateAdminInput) {
   return api.post<{ user: UserProfile }>('/api/admin/users', input)
 }
+
+export interface AdminDepartment {
+  id: string
+  name: string
+  headEmail: string | null
+}
+
+export function listDepartmentsAdmin() {
+  return api.get<{ departments: AdminDepartment[] }>('/api/admin/departments')
+}
+
+export function updateDepartmentHeadEmail(id: string, headEmail: string | null) {
+  return api.patch<{ department: AdminDepartment }>(`/api/admin/departments/${id}`, { headEmail })
+}

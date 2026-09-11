@@ -90,18 +90,46 @@ function CareBadge() {
   )
 }
 
+function Flower({ className, color = 'var(--color-accent-orange)' }: { className?: string; color?: string }) {
+  return (
+    <svg viewBox="0 0 60 60" className={className} aria-hidden="true">
+      <g fill={color} opacity="0.85">
+        {[0, 72, 144, 216, 288].map((angle) => (
+          <ellipse key={angle} cx="30" cy="16" rx="9" ry="14" transform={`rotate(${angle} 30 30)`} />
+        ))}
+      </g>
+      <circle cx="30" cy="30" r="7" fill="var(--color-brand-600)" />
+    </svg>
+  )
+}
+
 function HillsAndPlant() {
   return (
     <svg viewBox="0 0 1200 220" className="absolute bottom-0 left-0 h-40 w-full" preserveAspectRatio="none" aria-hidden="true">
       <path d="M0 140 Q150 90 320 130 T650 120 T1000 140 T1200 120 V220 H0 Z" fill="var(--color-accent-green)" opacity="0.18" />
       <path d="M0 170 Q200 120 420 160 T800 155 T1200 170 V220 H0 Z" fill="var(--color-accent-green)" opacity="0.28" />
-      {/* Plant silhouette */}
+      {/* Plant silhouettes, spread across the horizon */}
       <g opacity="0.35" fill="var(--color-brand-700)">
         <rect x="70" y="90" width="60" height="70" />
         <polygon points="70,90 100,60 130,90" />
         <rect x="112" y="45" width="8" height="50" />
         <rect x="128" y="60" width="7" height="35" />
         <rect x="55" y="120" width="10" height="40" />
+      </g>
+      <g opacity="0.3" fill="var(--color-accent-green)">
+        <polygon points="430,140 460,80 490,140" />
+        <polygon points="450,150 480,95 510,150" />
+        <rect x="472" y="150" width="8" height="30" />
+      </g>
+      <g opacity="0.3" fill="var(--color-brand-600)">
+        <polygon points="760,150 790,90 820,150" />
+        <polygon points="785,160 815,100 845,160" />
+        <rect x="800" y="160" width="8" height="30" />
+      </g>
+      <g opacity="0.3" fill="var(--color-accent-green)">
+        <rect x="1040" y="110" width="55" height="65" />
+        <polygon points="1040,110 1067,55 1095,110" />
+        <rect x="1062" y="70" width="8" height="45" />
       </g>
     </svg>
   )
@@ -166,14 +194,28 @@ export default function LoginPage() {
       <div className="pointer-events-none absolute -left-6 -top-6 opacity-80 dark:opacity-40">
         <LeafBranch />
       </div>
+      <div className="pointer-events-none absolute -right-8 -top-8 hidden scale-x-[-1] opacity-70 dark:opacity-35 sm:block">
+        <LeafBranch />
+      </div>
       <Bird className="pointer-events-none absolute left-1/4 top-16 h-4 w-8 opacity-70 dark:opacity-40" />
       <Bird className="pointer-events-none absolute left-1/3 top-24 h-3 w-6 opacity-50 dark:opacity-30" />
+      <Bird className="pointer-events-none absolute right-1/4 top-14 hidden h-4 w-8 -scale-x-100 opacity-60 dark:opacity-35 sm:block" />
+      <Bird className="pointer-events-none absolute right-[15%] top-28 hidden h-3 w-6 -scale-x-100 opacity-45 dark:opacity-25 md:block" />
+
+      <Flower className="pointer-events-none absolute bottom-24 left-8 hidden h-11 w-11 opacity-80 dark:opacity-50 sm:block" color="var(--color-accent-orange)" />
+      <Flower className="pointer-events-none absolute bottom-36 left-24 hidden h-7 w-7 opacity-70 dark:opacity-40 md:block" color="var(--color-accent-green)" />
+      <Flower className="pointer-events-none absolute bottom-20 right-10 hidden h-9 w-9 opacity-75 dark:opacity-45 sm:block" color="var(--color-brand-500)" />
+      <Flower className="pointer-events-none absolute bottom-40 right-28 hidden h-6 w-6 opacity-60 dark:opacity-35 lg:block" color="var(--color-accent-orange)" />
+
       <HillsAndPlant />
 
-      <div className="pointer-events-none absolute right-6 top-28 z-10 hidden xl:block">
+      <div className="pointer-events-none absolute left-6 top-1/3 z-10 hidden lg:flex">
+        <LeafBranch />
+      </div>
+      <div className="pointer-events-none absolute right-6 top-28 z-10 hidden lg:block">
         <FloatingHearts />
       </div>
-      <div className="pointer-events-none absolute right-4 bottom-20 z-10 hidden xl:block">
+      <div className="pointer-events-none absolute right-4 bottom-20 z-10 hidden lg:block">
         <CareBadge />
       </div>
 

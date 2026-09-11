@@ -13,6 +13,8 @@ import {
   handleChangePassword,
   handleForgotPassword,
   handleResetPassword,
+  handleVerifyEmail,
+  handleResendVerification,
 } from './auth/handlers.js'
 import {
   handleCreateGrievance,
@@ -95,6 +97,8 @@ app.patch('/api/auth/me', adapt(handleUpdateProfile))
 app.post('/api/auth/change-password', adapt(handleChangePassword))
 app.post('/api/auth/forgot-password', adapt(handleForgotPassword))
 app.post('/api/auth/reset-password', adapt(handleResetPassword))
+app.post('/api/auth/verify-email', adapt(handleVerifyEmail))
+app.post('/api/auth/resend-verification', adapt(handleResendVerification))
 
 // Reference data
 app.get('/api/departments', adapt(handleListDepartments))

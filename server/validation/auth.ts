@@ -29,6 +29,15 @@ export const forgotPasswordSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
 })
 
+export const verifyEmailSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  otp: z.string().length(6, 'Enter the 6-digit code.'),
+})
+
+export const resendVerificationSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+})
+
 export const resetPasswordSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   otp: z.string().length(6, 'Enter the 6-digit code.'),

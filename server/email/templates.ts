@@ -32,6 +32,15 @@ export function otpEmailTemplate(otp: string): string {
   )
 }
 
+export function verifyEmailTemplate(otp: string): string {
+  return shell(
+    'Verify Your Email',
+    `<p>Use the code below to verify your email and activate your Dalmia Rajgangpur Grievance Portal account. It expires in 10 minutes.</p>
+     <p style="font-size:28px; font-weight:700; letter-spacing:6px; color:#163e91;">${otp}</p>
+     <p style="color:#64748b; font-size:12px;">If you didn't create this account, you can safely ignore this email.</p>`,
+  )
+}
+
 export function grievanceNotificationTemplate(title: string, message: string): string {
   return shell(title, `<p>${escapeHtml(message)}</p>`)
 }

@@ -4,7 +4,7 @@ import { hashPassword, verifyPassword } from './password.js'
 import { signAuthToken } from './jwt.js'
 import { generateOtp, hashOtp, otpMatches, OTP_TTL_MINUTES } from './otp.js'
 import { sendEmail } from '../email.js'
-import { otpEmailTemplate, welcomeEmailTemplate } from '../email/templates.js'
+import { otpEmailTemplate, welcomeEmailTemplate, verifyEmailTemplate } from '../email/templates.js'
 import { logAudit } from '../audit.js'
 import type { registerSchema, updateProfileSchema, createAdminSchema } from '../validation/auth.js'
 import type { z } from 'zod'
@@ -29,6 +29,7 @@ export async function registerUser(input: RegisterInput, ipAddress: string | nul
   if (!role) throw new AppError('The Employee role has not been seeded. Run `npm run db:seed`.', 500)
 
   const passwordHash = await hashPassword(input.password)
+  const otp = generateOtp()
 
   const user = await prisma.user.create({
     data: {
@@ -40,19 +41,71 @@ export async function registerUser(input: RegisterInput, ipAddress: string | nul
       passwordHash,
       departmentId: department.id,
       roleId: role.id,
+      isVerified: false,
+      verifyOtpHash: hashOtp(otp),
+      verifyOtpExpiresAt: new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000),
     },
     include: userWithRelations,
   })
 
   await logAudit({ userId: user.id, action: 'REGISTER', entity: 'User', entityId: user.id, ipAddress })
 
+  const result = await sendEmail({
+    to: user.email,
+    subject: 'Verify your email — Dalmia Rajgangpur Grievance Portal',
+    html: verifyEmailTemplate(otp),
+  })
+
+  return { user, devOtp: result.skipped ? otp : undefined }
+}
+
+export async function verifyEmail(email: string, otp: string): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { email } })
+  if (!user || !user.verifyOtpHash || !user.verifyOtpExpiresAt) {
+    throw new AppError('Invalid or expired code.', 400)
+  }
+  if (user.isVerified) throw new AppError('This account is already verified.', 400)
+  if (user.verifyOtpExpiresAt.getTime() < Date.now()) {
+    throw new AppError('This code has expired. Request a new one.', 400)
+  }
+  if (!otpMatches(otp, user.verifyOtpHash)) {
+    throw new AppError('Invalid or expired code.', 400)
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { isVerified: true, verifyOtpHash: null, verifyOtpExpiresAt: null },
+  })
+  await logAudit({ userId: user.id, action: 'EMAIL_VERIFIED', entity: 'User', entityId: user.id })
+
   await sendEmail({
     to: user.email,
     subject: 'Welcome to the Dalmia Rajgangpur Grievance Portal',
     html: welcomeEmailTemplate({ firstName: user.firstName, employeeId: user.employeeId }),
   })
+}
 
-  return user
+export async function resendVerificationOtp(email: string): Promise<{ devOtp?: string }> {
+  const user = await prisma.user.findUnique({ where: { email } })
+  // Respond the same way whether or not the account exists, so we don't leak registered emails.
+  if (!user || user.isVerified) return {}
+
+  const otp = generateOtp()
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      verifyOtpHash: hashOtp(otp),
+      verifyOtpExpiresAt: new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000),
+    },
+  })
+
+  const result = await sendEmail({
+    to: user.email,
+    subject: 'Verify your email — Dalmia Rajgangpur Grievance Portal',
+    html: verifyEmailTemplate(otp),
+  })
+
+  return result.skipped ? { devOtp: otp } : {}
 }
 
 export async function loginUser(identifier: string, password: string, ipAddress: string | null) {
@@ -68,6 +121,10 @@ export async function loginUser(identifier: string, password: string, ipAddress:
 
   const valid = await verifyPassword(password, user.passwordHash)
   if (!valid) throw new AppError('Invalid Employee ID/email or password.', 401)
+
+  if (!user.isVerified) {
+    throw new AppError('Please verify your email before signing in.', 403)
+  }
 
   await prisma.user.update({ where: { id: user.id }, data: { lastLogin: new Date() } })
   await logAudit({ userId: user.id, action: 'LOGIN', entity: 'User', entityId: user.id, ipAddress })
@@ -194,6 +251,7 @@ export async function createAdminUser(input: CreateAdminInput, creatorId: string
       passwordHash,
       departmentId: department.id,
       roleId: role.id,
+      isVerified: true,
     },
     include: userWithRelations,
   })

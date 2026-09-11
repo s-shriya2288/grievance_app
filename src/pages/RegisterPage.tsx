@@ -49,7 +49,7 @@ export default function RegisterPage() {
 
     setLoading(true)
     try {
-      await registerAccount({
+      const result = await registerAccount({
         employeeId: employeeId.trim(),
         firstName: firstName.trim(),
         lastName: lastName.trim(),
@@ -59,7 +59,7 @@ export default function RegisterPage() {
         password,
         confirmPassword,
       })
-      navigate('/login', { state: { registered: true } })
+      navigate('/verify-email', { state: { email: result.email, devOtp: result.devOtp } })
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.')
     } finally {

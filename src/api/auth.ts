@@ -13,7 +13,15 @@ export interface RegisterInput {
 }
 
 export function register(input: RegisterInput) {
-  return api.post<{ user: UserProfile }>('/api/auth/register', input)
+  return api.post<{ email: string; devOtp?: string }>('/api/auth/register', input)
+}
+
+export function verifyEmail(email: string, otp: string) {
+  return api.post<{ ok: true }>('/api/auth/verify-email', { email, otp })
+}
+
+export function resendVerification(email: string) {
+  return api.post<{ ok: true; devOtp?: string }>('/api/auth/resend-verification', { email })
 }
 
 export function login(identifier: string, password: string, rememberMe = true) {

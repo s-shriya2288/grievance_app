@@ -127,7 +127,7 @@ export default function Topbar() {
   const initials = user ? `${user.firstName[0] ?? ''}${user.lastName[0] ?? ''}`.toUpperCase().slice(0, 2) : ''
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 md:px-8">
+    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white/80 px-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 md:px-8">
       <div className="flex items-center gap-2 md:hidden">
         <Logo size="sm" />
       </div>
@@ -161,7 +161,7 @@ export default function Topbar() {
             {user?.profilePhoto ? (
               <img src={user.profilePhoto} alt="" className="h-8 w-8 rounded-full object-cover" />
             ) : (
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-white">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-accent-green via-brand-600 to-accent-orange text-xs font-semibold text-white">
                 {initials}
               </span>
             )}

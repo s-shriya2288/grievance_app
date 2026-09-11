@@ -3,12 +3,23 @@ import { PASSWORD_REQUIREMENTS, isStrongPassword } from '../auth/password.js'
 
 export const strongPassword = z.string().min(8).max(72).refine(isStrongPassword, PASSWORD_REQUIREMENTS)
 
+export const COMPANY_EMAIL_DOMAIN = '@dalmiacement.com'
+
+export const companyEmail = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email()
+  .refine((email) => email.endsWith(COMPANY_EMAIL_DOMAIN), {
+    message: `Use your company email address ending in ${COMPANY_EMAIL_DOMAIN}`,
+  })
+
 export const registerSchema = z
   .object({
     employeeId: z.string().trim().min(2).max(30),
     firstName: z.string().trim().min(1).max(60),
     lastName: z.string().trim().min(1).max(60),
-    email: z.string().trim().toLowerCase().email(),
+    email: companyEmail,
     phoneNumber: z.string().trim().min(7).max(20).optional(),
     departmentId: z.string().uuid('Select a valid department.'),
     password: strongPassword,
@@ -62,7 +73,7 @@ export const createAdminSchema = z
     employeeId: z.string().trim().min(2).max(30),
     firstName: z.string().trim().min(1).max(60),
     lastName: z.string().trim().min(1).max(60),
-    email: z.string().trim().toLowerCase().email(),
+    email: companyEmail,
     phoneNumber: z.string().trim().min(7).max(20).optional(),
     departmentId: z.string().uuid('Select a valid department.'),
     role: z.enum(['Department Admin', 'Super Admin']),

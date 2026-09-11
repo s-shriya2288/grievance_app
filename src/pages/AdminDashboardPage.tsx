@@ -75,6 +75,13 @@ export default function AdminDashboardPage() {
     sky: 'bg-sky-50 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300',
   }
 
+  const accentBar = {
+    brand: 'from-brand-400 to-brand-600',
+    orange: 'from-amber-400 to-accent-orange',
+    green: 'from-emerald-400 to-accent-green',
+    sky: 'from-sky-400 to-sky-600',
+  }
+
   const accentIcons = { brand: '📋', orange: '⏳', green: '⏱', sky: '🏆' }
 
   const filtered = useMemo(() => {
@@ -123,9 +130,14 @@ export default function AdminDashboardPage() {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
-      <motion.div variants={item}>
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">HR Admin Dashboard</h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+      <motion.div
+        variants={item}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-accent-orange via-orange-600 to-amber-600 p-5 text-white shadow-lg shadow-orange-900/10"
+      >
+        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-12 left-1/4 h-32 w-32 rounded-full bg-brand-500/20 blur-2xl" />
+        <h1 className="relative text-2xl font-semibold text-white">HR Admin Dashboard</h1>
+        <p className="relative mt-1 text-sm text-orange-50/90">
           Rajgangpur Unit — where grievances come from and how long they take to resolve.
         </p>
       </motion.div>
@@ -138,7 +150,12 @@ export default function AdminDashboardPage() {
 
       <motion.div variants={item} className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+          <motion.div
+            key={stat.label}
+            whileHover={{ y: -3 }}
+            className="relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-colors hover:border-orange-200 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+          >
+            <span className={`absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${accentBar[stat.accent]}`} />
             <div className="flex items-center gap-2">
               <span className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm ${accentClasses[stat.accent]}`}>
                 {accentIcons[stat.accent]}
@@ -147,7 +164,7 @@ export default function AdminDashboardPage() {
             </div>
             <p className="mt-3 text-2xl font-semibold text-slate-900 dark:text-slate-100">{stat.value}</p>
             {stat.sub && <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">{stat.sub}</p>}
-          </div>
+          </motion.div>
         ))}
       </motion.div>
 
@@ -213,7 +230,7 @@ export default function AdminDashboardPage() {
               onClick={() => setStatusFilter(s)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 statusFilter === s
-                  ? 'bg-brand-600 text-white'
+                  ? 'bg-gradient-to-r from-brand-600 to-brand-700 text-white shadow-sm'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
               }`}
             >
@@ -228,7 +245,7 @@ export default function AdminDashboardPage() {
               onClick={() => setPriorityFilter(p)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 priorityFilter === p
-                  ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900'
+                  ? 'bg-gradient-to-r from-accent-orange to-orange-600 text-white shadow-sm'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
               }`}
             >

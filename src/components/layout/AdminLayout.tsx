@@ -18,13 +18,15 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-slate-950 dark:via-slate-950 dark:to-orange-900/20">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 md:flex">
-        <div className="flex h-16 items-center gap-2 border-b border-slate-200 px-6 dark:border-slate-800">
-          <Logo size="sm" />
+        <div className="flex h-16 items-center gap-2 bg-gradient-to-r from-accent-orange via-orange-600 to-amber-600 px-6">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white p-1 shadow-sm">
+            <Logo size="sm" />
+          </span>
           <div className="min-w-0 leading-tight">
-            <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">HR Admin Portal</p>
-            <p className="truncate text-xs text-slate-400 dark:text-slate-500">Dalmia Rajgangpur</p>
+            <p className="truncate text-sm font-semibold text-white">HR Admin Portal</p>
+            <p className="truncate text-xs text-orange-50/80">Dalmia Rajgangpur</p>
           </div>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
@@ -48,7 +50,9 @@ export default function AdminLayout() {
                     transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                   />
                 )}
-                <span className="relative z-10 w-5 text-center">▦</span>
+                <span className="relative z-10 flex h-7 w-7 items-center justify-center rounded-md bg-accent-orange-light text-sm text-orange-700 dark:bg-orange-500/20 dark:text-orange-300">
+                  ▦
+                </span>
                 <span className="relative z-10">Dashboard</span>
               </>
             )}
@@ -73,7 +77,9 @@ export default function AdminLayout() {
                       transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                     />
                   )}
-                  <span className="relative z-10 w-5 text-center">🕘</span>
+                  <span className="relative z-10 flex h-7 w-7 items-center justify-center rounded-md bg-sky-100 text-sm text-sky-700 dark:bg-sky-500/20 dark:text-sky-300">
+                    🕘
+                  </span>
                   <span className="relative z-10">Audit Log</span>
                 </>
               )}
@@ -99,7 +105,9 @@ export default function AdminLayout() {
                       transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                     />
                   )}
-                  <span className="relative z-10 w-5 text-center">🛡️</span>
+                  <span className="relative z-10 flex h-7 w-7 items-center justify-center rounded-md bg-accent-green-light text-sm text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
+                    🛡️
+                  </span>
                   <span className="relative z-10">Manage Admins</span>
                 </>
               )}
@@ -114,7 +122,7 @@ export default function AdminLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 md:px-8">
+        <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white/80 px-4 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 md:px-8">
           <div className="flex items-center gap-2 md:hidden">
             <Logo size="sm" />
           </div>

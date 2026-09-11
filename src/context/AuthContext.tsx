@@ -8,7 +8,9 @@ interface AuthContextValue {
   isAuthenticated: boolean
   isLoading: boolean
   login: (identifier: string, password: string, rememberMe?: boolean) => Promise<UserProfile>
-  register: (input: authApi.RegisterInput) => Promise<void>
+  register: (input: authApi.RegisterInput) => Promise<{ email: string; devOtp?: string }>
+  verifyEmail: (email: string, otp: string) => Promise<void>
+  resendVerification: (email: string) => Promise<{ devOtp?: string }>
   logout: () => Promise<void>
   refreshProfile: () => Promise<void>
   updateProfile: (input: Parameters<typeof authApi.updateProfile>[0]) => Promise<void>
@@ -36,7 +38,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const register = async (input: authApi.RegisterInput) => {
-    await authApi.register(input)
+    return authApi.register(input)
+  }
+
+  const verifyEmail = async (email: string, otp: string) => {
+    await authApi.verifyEmail(email, otp)
+  }
+
+  const resendVerification = async (email: string) => {
+    return authApi.resendVerification(email)
   }
 
   const logout = async () => {
@@ -71,6 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         login,
         register,
+        verifyEmail,
+        resendVerification,
         logout,
         refreshProfile,
         updateProfile,

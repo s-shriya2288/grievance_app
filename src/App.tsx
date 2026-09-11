@@ -11,6 +11,7 @@ import AdminLoginPage from './pages/AdminLoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import VerifyEmailPage from './pages/VerifyEmailPage'
 import DashboardPage from './pages/DashboardPage'
 import GrievancesListPage from './pages/GrievancesListPage'
 import GrievanceDetailPage from './pages/GrievanceDetailPage'
@@ -33,6 +34,7 @@ export default function App() {
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/verify-email" element={<VerifyEmailPage />} />
               <Route path="/admin/login" element={<AdminLoginPage />} />
               <Route path="/download" element={<DownloadAppPage />} />
 

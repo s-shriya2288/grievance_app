@@ -82,12 +82,16 @@ model User {
   plant        String  @default("Rajgangpur Unit")
   profilePhoto String? @map("profile_photo")
 
-  isVerified    Boolean       @default(true) @map("is_verified")
+  isVerified    Boolean       @default(false) @map("is_verified")
   accountStatus AccountStatus @default(Active) @map("account_status")
 
   // Password reset (forgot-password OTP flow)
   resetOtpHash      String?   @map("reset_otp_hash")
   resetOtpExpiresAt DateTime? @map("reset_otp_expires_at")
+
+  // Email verification (registration OTP flow)
+  verifyOtpHash      String?   @map("verify_otp_hash")
+  verifyOtpExpiresAt DateTime? @map("verify_otp_expires_at")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")

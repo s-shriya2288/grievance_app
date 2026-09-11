@@ -9,6 +9,104 @@ const ADMIN_ROLES = ['Department Admin', 'Super Admin']
 const inputClass =
   'w-full rounded-xl border border-slate-300 py-2.5 pl-11 pr-3.5 text-sm outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-brand-500/20'
 
+function LeafBranch() {
+  return (
+    <svg viewBox="0 0 220 200" className="h-44 w-44 lg:h-56 lg:w-56" aria-hidden="true">
+      <path d="M10 10 Q80 40 130 100 T190 190" fill="none" stroke="#5b7a4a" strokeWidth="3" opacity="0.6" />
+      {[
+        { x: 40, y: 35, r: -30, c: 'var(--color-accent-green)' },
+        { x: 65, y: 55, r: 10, c: '#7cc576' },
+        { x: 95, y: 80, r: -20, c: 'var(--color-accent-green)' },
+        { x: 30, y: 65, r: 60, c: '#7cc576' },
+        { x: 120, y: 115, r: 0, c: 'var(--color-accent-green)' },
+        { x: 145, y: 145, r: -40, c: '#7cc576' },
+      ].map((leaf, i) => (
+        <ellipse
+          key={i}
+          cx={leaf.x}
+          cy={leaf.y}
+          rx="16"
+          ry="9"
+          fill={leaf.c}
+          opacity="0.85"
+          transform={`rotate(${leaf.r} ${leaf.x} ${leaf.y})`}
+        />
+      ))}
+    </svg>
+  )
+}
+
+function Bird({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 40 20" className={className} aria-hidden="true">
+      <path
+        d="M2 14 Q10 2 20 10 Q30 2 38 14"
+        fill="none"
+        stroke="var(--color-brand-500)"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        opacity="0.5"
+      />
+    </svg>
+  )
+}
+
+function FloatingHearts() {
+  const hearts = [
+    { c: 'var(--color-accent-green)', delay: 0 },
+    { c: 'var(--color-brand-500)', delay: 0.4 },
+    { c: 'var(--color-accent-orange)', delay: 0.8 },
+    { c: '#7fb8e8', delay: 1.2 },
+  ]
+  return (
+    <div className="hidden flex-col items-center gap-5 lg:flex">
+      {hearts.map((h, i) => (
+        <motion.span
+          key={i}
+          className="text-2xl"
+          style={{ color: h.c }}
+          animate={{ y: [0, -10, 0] }}
+          transition={{ duration: 3, repeat: Infinity, delay: h.delay, ease: 'easeInOut' }}
+        >
+          ♥
+        </motion.span>
+      ))}
+    </div>
+  )
+}
+
+function CareBadge() {
+  return (
+    <div className="hidden flex-col items-center gap-2 rounded-[40%] bg-brand-600/90 px-8 py-10 text-center text-white shadow-xl lg:flex">
+      <span className="text-3xl">🤲💙</span>
+      <p className="font-semibold leading-tight">
+        We Listen
+        <br />
+        We Act
+        <br />
+        We Care
+      </p>
+    </div>
+  )
+}
+
+function HillsAndPlant() {
+  return (
+    <svg viewBox="0 0 1200 220" className="absolute bottom-0 left-0 h-40 w-full" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 140 Q150 90 320 130 T650 120 T1000 140 T1200 120 V220 H0 Z" fill="var(--color-accent-green)" opacity="0.18" />
+      <path d="M0 170 Q200 120 420 160 T800 155 T1200 170 V220 H0 Z" fill="var(--color-accent-green)" opacity="0.28" />
+      {/* Plant silhouette */}
+      <g opacity="0.35" fill="var(--color-brand-700)">
+        <rect x="70" y="90" width="60" height="70" />
+        <polygon points="70,90 100,60 130,90" />
+        <rect x="112" y="45" width="8" height="50" />
+        <rect x="128" y="60" width="7" height="35" />
+        <rect x="55" y="120" width="10" height="40" />
+      </g>
+    </svg>
+  )
+}
+
 function CareHeartIcon() {
   return (
     <svg viewBox="0 0 96 84" className="h-16 w-18" aria-hidden="true">
@@ -59,17 +157,32 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-b from-sky-100 via-sky-50 to-emerald-50 dark:from-slate-950 dark:via-slate-900 dark:to-brand-900/40">
+    <div className="flex min-h-screen flex-col bg-gradient-to-b from-sky-100 via-sky-50 to-emerald-50 dark:from-slate-950 dark:via-slate-900 dark:to-brand-900/40">
+      <div className="relative flex flex-1 flex-col overflow-hidden">
       <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-accent-green/20 blur-3xl dark:bg-accent-green/10" />
       <div className="pointer-events-none absolute -right-16 top-1/3 h-80 w-80 rounded-full bg-accent-orange/20 blur-3xl dark:bg-accent-orange/10" />
       <div className="pointer-events-none absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-brand-300/20 blur-3xl dark:bg-brand-500/10" />
+
+      <div className="pointer-events-none absolute -left-6 -top-6 opacity-80 dark:opacity-40">
+        <LeafBranch />
+      </div>
+      <Bird className="pointer-events-none absolute left-1/4 top-16 h-4 w-8 opacity-70 dark:opacity-40" />
+      <Bird className="pointer-events-none absolute left-1/3 top-24 h-3 w-6 opacity-50 dark:opacity-30" />
+      <HillsAndPlant />
+
+      <div className="pointer-events-none absolute right-6 top-28 z-10 hidden xl:block">
+        <FloatingHearts />
+      </div>
+      <div className="pointer-events-none absolute right-4 bottom-20 z-10 hidden xl:block">
+        <CareBadge />
+      </div>
 
       <div className="flex flex-1 items-start justify-center px-4 py-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
-          className="relative z-10 w-full max-w-md rounded-3xl border border-white/60 bg-white/95 p-8 shadow-2xl shadow-brand-900/10 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-none"
+          className="relative z-20 w-full max-w-md rounded-3xl border border-white/60 bg-white/95 p-8 shadow-2xl shadow-brand-900/10 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 dark:shadow-none"
         >
           <div className="mb-2 flex items-start justify-between">
             <span />
@@ -84,10 +197,13 @@ export default function LoginPage() {
                 style={{ fontFamily: 'var(--font-script)' }}
                 className="bg-gradient-to-r from-accent-green via-brand-600 to-accent-orange bg-clip-text text-4xl text-transparent"
               >
-                We care
+                WeCare
               </span>{' '}
               @RGP
             </h1>
+            <p className="mt-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400">
+              Employee Grievance Management Portal
+            </p>
             <div className="mt-3 flex w-full items-center gap-3">
               <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
               <span className="text-accent-orange">♥</span>
@@ -97,7 +213,6 @@ export default function LoginPage() {
               Your Voice. Our Commitment. Better Together.
             </p>
             <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Rajgangpur Plant</p>
-            <p className="text-sm font-medium text-brand-600 dark:text-brand-400">Employee Grievance Management Portal</p>
           </div>
 
           {justRegistered && (
@@ -235,6 +350,7 @@ export default function LoginPage() {
             </Link>
           </div>
         </motion.div>
+      </div>
       </div>
 
       <div className="relative z-10 bg-brand-700 py-4 text-white dark:bg-brand-900">

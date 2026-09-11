@@ -5,6 +5,8 @@ import {
   resetPasswordSchema,
   changePasswordSchema,
   updateProfileSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
 } from '../validation/auth.js'
 import {
   registerUser,
@@ -14,6 +16,8 @@ import {
   changePassword,
   getUserProfile,
   updateUserProfile,
+  verifyEmail,
+  resendVerificationOtp,
 } from './service.js'
 import { toUserDto } from '../dto/user.js'
 import { requireAuth } from '../middleware/auth.js'
@@ -22,8 +26,20 @@ import type { HandlerRequest, HandlerResult } from '../http.js'
 
 export async function handleRegister(req: HandlerRequest): Promise<HandlerResult> {
   const input = registerSchema.parse(req.body)
-  const user = await registerUser(input, req.ip)
-  return { statusCode: 201, body: { user: toUserDto(user) } }
+  const { user, devOtp } = await registerUser(input, req.ip)
+  return { statusCode: 201, body: { email: user.email, devOtp } }
+}
+
+export async function handleVerifyEmail(req: HandlerRequest): Promise<HandlerResult> {
+  const input = verifyEmailSchema.parse(req.body)
+  await verifyEmail(input.email, input.otp)
+  return { statusCode: 200, body: { ok: true } }
+}
+
+export async function handleResendVerification(req: HandlerRequest): Promise<HandlerResult> {
+  const input = resendVerificationSchema.parse(req.body)
+  const result = await resendVerificationOtp(input.email)
+  return { statusCode: 200, body: { ok: true, devOtp: result.devOtp } }
 }
 
 export async function handleLogin(req: HandlerRequest): Promise<HandlerResult> {

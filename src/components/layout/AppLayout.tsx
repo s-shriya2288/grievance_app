@@ -9,7 +9,7 @@ export default function AppLayout() {
   const location = useLocation()
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-screen bg-gradient-to-br from-sky-50 via-white to-emerald-50 dark:from-slate-950 dark:via-slate-950 dark:to-brand-900/30">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar />

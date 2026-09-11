@@ -17,6 +17,13 @@ const accentClasses = {
   rose: 'bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300',
 } as const
 
+const accentBar = {
+  brand: 'from-brand-400 to-brand-600',
+  orange: 'from-amber-400 to-accent-orange',
+  green: 'from-emerald-400 to-accent-green',
+  rose: 'from-rose-400 to-rose-600',
+} as const
+
 const accentIcons = { brand: '📋', orange: '⏳', green: '✅', rose: '⚠️' } as const
 
 const container = {
@@ -78,13 +85,19 @@ export default function DashboardPage() {
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
       <motion.div
         variants={item}
-        className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand-600 via-brand-600 to-emerald-600 p-4 text-white shadow-lg shadow-brand-900/10"
       >
-        <Logo size="md" />
-        <div className="min-w-0 leading-tight">
-          <p className="truncate font-semibold text-slate-900 dark:text-slate-100">Dalmia Cement (Bharat) Limited</p>
-          <p className="truncate text-sm text-slate-500 dark:text-slate-400">Rajgangpur Plant</p>
-          <p className="truncate text-xs text-slate-400 dark:text-slate-500">Employee Grievance Management Portal</p>
+        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+        <div className="pointer-events-none absolute -bottom-12 left-1/3 h-32 w-32 rounded-full bg-accent-orange/20 blur-2xl" />
+        <div className="relative flex items-center gap-3">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white p-1.5 shadow-sm">
+            <Logo size="md" />
+          </span>
+          <div className="min-w-0 leading-tight">
+            <p className="truncate font-semibold text-white">Dalmia Cement (Bharat) Limited</p>
+            <p className="truncate text-sm text-brand-50/90">Rajgangpur Plant</p>
+            <p className="truncate text-xs text-brand-50/70">Employee Grievance Management Portal</p>
+          </div>
         </div>
       </motion.div>
 
@@ -93,7 +106,7 @@ export default function DashboardPage() {
           {user.profilePhoto ? (
             <img src={user.profilePhoto} alt="" className="h-12 w-12 shrink-0 rounded-full object-cover" />
           ) : (
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-600 text-sm font-semibold text-white">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent-green via-brand-600 to-accent-orange text-sm font-semibold text-white">
               {initials}
             </span>
           )}
@@ -106,7 +119,7 @@ export default function DashboardPage() {
         </div>
         <Link
           to="/grievances/new"
-          className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+          className="inline-flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-brand-600 to-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand-700/30 transition-transform hover:scale-105 hover:from-brand-700 hover:to-brand-800"
         >
           + Submit New Grievance
         </Link>
@@ -116,16 +129,19 @@ export default function DashboardPage() {
         {stats.map((stat) => {
           const isSelected = selectedLabel === stat.label
           return (
-            <button
+            <motion.button
               key={stat.label}
               type="button"
+              whileHover={{ y: -3 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setSelectedLabel(isSelected ? null : stat.label)}
-              className={`rounded-xl border bg-white p-5 text-left transition-colors dark:bg-slate-900 ${
+              className={`relative overflow-hidden rounded-xl border bg-white p-5 text-left shadow-sm transition-colors dark:bg-slate-900 ${
                 isSelected
                   ? 'border-brand-400 ring-2 ring-brand-100 dark:border-brand-500 dark:ring-brand-500/20'
                   : 'border-slate-200 hover:border-brand-200 dark:border-slate-800 dark:hover:border-slate-700'
               }`}
             >
+              <span className={`absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${accentBar[stat.accent]}`} />
               <div className="flex items-center gap-2">
                 <span className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm ${accentClasses[stat.accent]}`}>
                   {accentIcons[stat.accent]}
@@ -133,7 +149,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-slate-500 dark:text-slate-400">{stat.label}</p>
               </div>
               <p className="mt-3 text-3xl font-semibold text-slate-900 dark:text-slate-100">{stat.value}</p>
-            </button>
+            </motion.button>
           )
         })}
       </motion.div>

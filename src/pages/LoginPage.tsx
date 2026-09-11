@@ -239,7 +239,7 @@ export default function LoginPage() {
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                   className={inputClass}
-                  placeholder="ENG-1042 or you@dalmiabharat.com"
+                  placeholder="ENG-1042 or you@dalmiacement.com"
                 />
               </div>
             </div>

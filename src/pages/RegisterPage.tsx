@@ -123,7 +123,8 @@ export default function RegisterPage() {
               <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Company Email
               </label>
-              <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="you@dalmiabharat.com" />
+              <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="you@dalmiacement.com" />
+              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">Use your official @dalmiacement.com email address.</p>
             </div>
 
             <div>

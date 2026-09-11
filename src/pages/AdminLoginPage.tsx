@@ -68,7 +68,7 @@ export default function AdminLoginPage() {
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3.5 py-2.5 text-sm text-slate-100 outline-none transition-colors focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
-                placeholder="ENG-1042 or you@dalmiabharat.com"
+                placeholder="ENG-1042 or you@dalmiacement.com"
               />
             </div>
             <div>

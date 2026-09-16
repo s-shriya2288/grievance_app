@@ -7,6 +7,8 @@ import {
   updateProfileSchema,
   verifyEmailSchema,
   resendVerificationSchema,
+  requestEmailChangeSchema,
+  confirmEmailChangeSchema,
 } from '../validation/auth.js'
 import {
   registerUser,
@@ -18,6 +20,8 @@ import {
   updateUserProfile,
   verifyEmail,
   resendVerificationOtp,
+  requestEmailChange,
+  confirmEmailChange,
 } from './service.js'
 import { toUserDto } from '../dto/user.js'
 import { requireAuth } from '../middleware/auth.js'
@@ -66,6 +70,20 @@ export async function handleUpdateProfile(req: HandlerRequest): Promise<HandlerR
   const payload = requireAuth(req.cookieHeader)
   const input = updateProfileSchema.parse(req.body)
   const user = await updateUserProfile(payload.sub, input)
+  return { statusCode: 200, body: { user: toUserDto(user) } }
+}
+
+export async function handleRequestEmailChange(req: HandlerRequest): Promise<HandlerResult> {
+  const payload = requireAuth(req.cookieHeader)
+  const input = requestEmailChangeSchema.parse(req.body)
+  const result = await requestEmailChange(payload.sub, input.newEmail)
+  return { statusCode: 200, body: { ok: true, devOtp: result.devOtp } }
+}
+
+export async function handleConfirmEmailChange(req: HandlerRequest): Promise<HandlerResult> {
+  const payload = requireAuth(req.cookieHeader)
+  const input = confirmEmailChangeSchema.parse(req.body)
+  const user = await confirmEmailChange(payload.sub, input.otp)
   return { statusCode: 200, body: { user: toUserDto(user) } }
 }
 

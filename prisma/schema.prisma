@@ -90,9 +90,10 @@ model User {
   resetOtpHash      String?   @map("reset_otp_hash")
   resetOtpExpiresAt DateTime? @map("reset_otp_expires_at")
 
-  // Email verification (registration OTP flow)
+  // Email verification (registration OTP flow, also reused for email-change confirmation)
   verifyOtpHash      String?   @map("verify_otp_hash")
   verifyOtpExpiresAt DateTime? @map("verify_otp_expires_at")
+  pendingEmail       String?   @map("pending_email")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")

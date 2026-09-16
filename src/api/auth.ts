@@ -50,6 +50,14 @@ export function changePassword(currentPassword: string, newPassword: string) {
   return api.post<{ ok: true }>('/api/auth/change-password', { currentPassword, newPassword })
 }
 
+export function requestEmailChange(newEmail: string) {
+  return api.post<{ ok: true; devOtp?: string }>('/api/auth/change-email/request', { newEmail })
+}
+
+export function confirmEmailChange(otp: string) {
+  return api.post<{ user: UserProfile }>('/api/auth/change-email/confirm', { otp })
+}
+
 export function forgotPassword(email: string) {
   return api.post<{ ok: true; devOtp?: string }>('/api/auth/forgot-password', { email })
 }

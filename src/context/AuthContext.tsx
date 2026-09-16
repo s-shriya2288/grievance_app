@@ -15,6 +15,8 @@ interface AuthContextValue {
   refreshProfile: () => Promise<void>
   updateProfile: (input: Parameters<typeof authApi.updateProfile>[0]) => Promise<void>
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>
+  requestEmailChange: (newEmail: string) => Promise<{ devOtp?: string }>
+  confirmEmailChange: (otp: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -71,6 +73,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authApi.changePassword(currentPassword, newPassword)
   }
 
+  const requestEmailChange = async (newEmail: string) => {
+    return authApi.requestEmailChange(newEmail)
+  }
+
+  const confirmEmailChange = async (otp: string) => {
+    const { user } = await authApi.confirmEmailChange(otp)
+    setUser(user)
+  }
+
   if (isLoading) return null
 
   return (
@@ -87,6 +98,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshProfile,
         updateProfile,
         changePassword,
+        requestEmailChange,
+        confirmEmailChange,
       }}
     >
       {children}

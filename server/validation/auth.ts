@@ -68,6 +68,14 @@ export const updateProfileSchema = z.object({
   profilePhoto: z.string().url().optional(),
 })
 
+export const requestEmailChangeSchema = z.object({
+  newEmail: companyEmail,
+})
+
+export const confirmEmailChangeSchema = z.object({
+  otp: z.string().length(6, 'Enter the 6-digit code.'),
+})
+
 export const createAdminSchema = z
   .object({
     employeeId: z.string().trim().min(2).max(30),

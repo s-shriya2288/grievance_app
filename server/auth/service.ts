@@ -216,6 +216,61 @@ export async function updateUserProfile(userId: string, input: UpdateProfileInpu
   return prisma.user.update({ where: { id: userId }, data: input, include: userWithRelations })
 }
 
+export async function requestEmailChange(userId: string, newEmail: string): Promise<{ devOtp?: string }> {
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user) throw new AppError('User not found.', 404)
+  if (newEmail === user.email) throw new AppError('That is already your current email.', 400)
+
+  const existing = await prisma.user.findUnique({ where: { email: newEmail } })
+  if (existing) throw new AppError('This email is already registered.', 409)
+
+  const otp = generateOtp()
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      pendingEmail: newEmail,
+      verifyOtpHash: hashOtp(otp),
+      verifyOtpExpiresAt: new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000),
+    },
+  })
+
+  const result = await sendEmail({
+    to: newEmail,
+    subject: 'Confirm your new email — Dalmia Rajgangpur Grievance Portal',
+    html: verifyEmailTemplate(otp),
+  })
+
+  await logAudit({ userId, action: 'EMAIL_CHANGE_REQUESTED', entity: 'User', entityId: userId })
+
+  return result.skipped ? { devOtp: otp } : {}
+}
+
+export async function confirmEmailChange(userId: string, otp: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } })
+  if (!user || !user.pendingEmail || !user.verifyOtpHash || !user.verifyOtpExpiresAt) {
+    throw new AppError('No pending email change found. Please start again.', 400)
+  }
+  if (user.verifyOtpExpiresAt.getTime() < Date.now()) {
+    throw new AppError('This code has expired. Request a new one.', 400)
+  }
+  if (!otpMatches(otp, user.verifyOtpHash)) {
+    throw new AppError('Invalid or expired code.', 400)
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email: user.pendingEmail } })
+  if (existing && existing.id !== userId) {
+    throw new AppError('This email is already registered.', 409)
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { email: user.pendingEmail, pendingEmail: null, verifyOtpHash: null, verifyOtpExpiresAt: null },
+    include: userWithRelations,
+  })
+  await logAudit({ userId, action: 'EMAIL_CHANGED', entity: 'User', entityId: userId })
+  return updated
+}
+
 const ADMIN_ROLES = ['Department Admin', 'Super Admin']
 
 export async function listAdminUsers() {

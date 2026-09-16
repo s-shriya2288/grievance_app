@@ -15,6 +15,8 @@ import {
   handleResetPassword,
   handleVerifyEmail,
   handleResendVerification,
+  handleRequestEmailChange,
+  handleConfirmEmailChange,
 } from './auth/handlers.js'
 import {
   handleCreateGrievance,
@@ -105,6 +107,8 @@ app.post('/api/auth/forgot-password', adapt(handleForgotPassword))
 app.post('/api/auth/reset-password', adapt(handleResetPassword))
 app.post('/api/auth/verify-email', adapt(handleVerifyEmail))
 app.post('/api/auth/resend-verification', adapt(handleResendVerification))
+app.post('/api/auth/change-email/request', adapt(handleRequestEmailChange))
+app.post('/api/auth/change-email/confirm', adapt(handleConfirmEmailChange))
 
 // Reference data
 app.get('/api/departments', adapt(handleListDepartments))

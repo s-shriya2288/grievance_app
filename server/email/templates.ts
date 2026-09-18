@@ -45,13 +45,48 @@ export function grievanceNotificationTemplate(title: string, message: string): s
   return shell(title, `<p>${escapeHtml(message)}</p>`)
 }
 
-export function departmentRedirectTemplate(input: { ticketNumber: string; subject: string; departmentName: string }): string {
+export function departmentRedirectTemplate(input: {
+  ticketNumber: string
+  subject: string
+  departmentName: string
+  viewUrl: string
+  note?: string | null
+  deadline?: string | null
+}): string {
   const subject = escapeHtml(input.subject)
   const departmentName = escapeHtml(input.departmentName)
+  const noteHtml = input.note
+    ? `<p style="background:#f1f5f9;border-radius:8px;padding:10px 14px;color:#334155;font-size:14px;">
+         <strong>Note from the redirecting admin:</strong><br />${escapeHtml(input.note)}
+       </p>`
+    : ''
+  const deadlineHtml = input.deadline
+    ? `<p style="color:#b45309;font-size:14px;"><strong>Resolution deadline:</strong> ${escapeHtml(input.deadline)} — a reminder will go out to the department if it isn't resolved by then.</p>`
+    : ''
   return shell(
     `Grievance Routed to ${departmentName}`,
     `<p>Grievance <strong>${input.ticketNumber}</strong> — "${subject}" — has been routed to your department for action.</p>
-     <p><a href="${APP_URL}/admin/login" style="color:#163e91;">Sign in to the Admin Portal →</a></p>`,
+     ${noteHtml}
+     ${deadlineHtml}
+     <p><a href="${input.viewUrl}" style="color:#163e91;">View the grievance →</a></p>`,
+  )
+}
+
+export function redirectDeadlineReminderTemplate(input: {
+  ticketNumber: string
+  subject: string
+  departmentName: string
+  deadline: string
+  viewUrl: string
+}): string {
+  const subject = escapeHtml(input.subject)
+  const departmentName = escapeHtml(input.departmentName)
+  return shell(
+    `Overdue: Grievance ${input.ticketNumber}`,
+    `<p>Grievance <strong>${input.ticketNumber}</strong> — "${subject}" — was routed to the <strong>${departmentName}</strong>
+        department with a resolution deadline of <strong>${escapeHtml(input.deadline)}</strong>, which has now passed
+        without it being marked Resolved or Closed.</p>
+     <p><a href="${input.viewUrl}" style="color:#163e91;">View the grievance →</a></p>`,
   )
 }
 

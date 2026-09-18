@@ -156,6 +156,10 @@ model Grievance {
   resolution  String?
   reopenCount Int               @default(0) @map("reopen_count")
 
+  // Set when an admin redirects this grievance to another department with a resolution deadline
+  redirectDeadline       DateTime? @map("redirect_deadline")
+  redirectReminderSentAt DateTime? @map("redirect_reminder_sent_at")
+
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
   resolvedAt DateTime? @map("resolved_at")

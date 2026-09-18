@@ -23,8 +23,12 @@ function RedirectDepartmentControl({ grievance }: { grievance: Grievance }) {
   const { updateStatus } = useGrievances()
   const [departments, setDepartments] = useState<DepartmentOption[]>([])
   const [targetDepartmentId, setTargetDepartmentId] = useState('')
+  const [note, setNote] = useState('')
+  const [deadline, setDeadline] = useState('')
   const [redirecting, setRedirecting] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  const today = new Date().toISOString().slice(0, 10)
 
   useEffect(() => {
     fetchDepartments()
@@ -42,8 +46,14 @@ function RedirectDepartmentControl({ grievance }: { grievance: Grievance }) {
     setRedirecting(true)
     setMessage(null)
     try {
-      await updateStatus(grievance.id, { departmentId: targetDepartmentId })
+      await updateStatus(grievance.id, {
+        departmentId: targetDepartmentId,
+        redirectNote: note.trim() || undefined,
+        redirectDeadline: deadline || null,
+      })
       setMessage({ type: 'success', text: 'Grievance redirected.' })
+      setNote('')
+      setDeadline('')
     } catch (err) {
       setMessage({ type: 'error', text: err instanceof ApiError ? err.message : 'Could not redirect this grievance.' })
     } finally {
@@ -58,23 +68,44 @@ function RedirectDepartmentControl({ grievance }: { grievance: Grievance }) {
       <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
         Wrong department? Redirect this grievance
       </label>
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <select
-          value={targetDepartmentId}
-          onChange={(e) => setTargetDepartmentId(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 sm:flex-1"
-        >
-          {departments.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
+      <select
+        value={targetDepartmentId}
+        onChange={(e) => setTargetDepartmentId(e.target.value)}
+        className="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+      >
+        {departments.map((d) => (
+          <option key={d.id} value={d.id}>
+            {d.name}
+          </option>
+        ))}
+      </select>
+
+      <textarea
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        rows={2}
+        placeholder="Add a note for the department picking this up (optional)"
+        className="mt-2 w-full resize-none rounded-lg border border-slate-300 px-3.5 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+      />
+
+      <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="sm:flex-1">
+          <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+            Resolution deadline (optional) — a reminder goes to that department if it's overdue
+          </label>
+          <input
+            type="date"
+            min={today}
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            className="w-full rounded-lg border border-slate-300 px-3.5 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+          />
+        </div>
         <button
           type="button"
           onClick={handleRedirect}
           disabled={redirecting}
-          className="shrink-0 rounded-lg border border-sky-300 px-4 py-2 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-sky-500/40 dark:text-sky-300 dark:hover:bg-sky-500/10"
+          className="shrink-0 self-end rounded-lg border border-sky-300 px-4 py-2 text-sm font-semibold text-sky-700 transition-colors hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-sky-500/40 dark:text-sky-300 dark:hover:bg-sky-500/10"
         >
           {redirecting ? 'Redirecting…' : '🔀 Redirect'}
         </button>

@@ -6,7 +6,7 @@ export interface CreateGrievanceInput {
   subcategoryId: string
   subject: string
   description: string
-  dateOfIncident?: string | null
+  dateOfIncident: string
   personsInvolved?: string | null
   isConfidential?: boolean
   preferredResolution?: string | null
@@ -48,6 +48,8 @@ export interface UpdateGrievanceStatusInput {
   assignedAdminId?: string | null
   priority?: GrievancePriority
   departmentId?: string
+  redirectNote?: string
+  redirectDeadline?: string | null
 }
 
 export function updateGrievanceStatus(id: string, input: UpdateGrievanceStatusInput) {

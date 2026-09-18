@@ -84,7 +84,8 @@ export default function NewGrievancePage() {
     const next: Record<string, string> = {}
     if (subject.trim().length < 5) next.subject = 'Subject must be at least 5 characters.'
     if (description.trim().length < 20) next.description = 'Please provide at least 20 characters of detail.'
-    if (dateOfIncident && dateOfIncident > today) next.dateOfIncident = 'Date of incident cannot be in the future.'
+    if (!dateOfIncident) next.dateOfIncident = 'Date is required.'
+    else if (dateOfIncident > today) next.dateOfIncident = 'Date cannot be in the future.'
     setErrors(next)
     return Object.keys(next).length === 0
   }
@@ -111,7 +112,7 @@ export default function NewGrievancePage() {
         subcategoryId,
         subject: subject.trim(),
         description: description.trim(),
-        dateOfIncident: dateOfIncident || null,
+        dateOfIncident,
         personsInvolved: personsInvolved.trim() || null,
         isConfidential,
         preferredResolution: preferredResolution.trim() || null,
@@ -221,11 +222,12 @@ export default function NewGrievancePage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="dateOfIncident" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Date of Incident <span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>
+              Date
             </label>
             <input
               id="dateOfIncident"
               type="date"
+              required
               value={dateOfIncident}
               max={today}
               onChange={(e) => setDateOfIncident(e.target.value)}
@@ -235,7 +237,7 @@ export default function NewGrievancePage() {
           </div>
           <div>
             <label htmlFor="personsInvolved" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Persons Involved <span className="font-normal text-slate-400 dark:text-slate-500">(optional)</span>
+              Persons Involved <span className="font-normal text-slate-400 dark:text-slate-500">(wherever applicable)</span>
             </label>
             <input
               id="personsInvolved"

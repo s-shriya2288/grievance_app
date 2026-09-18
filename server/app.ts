@@ -27,6 +27,7 @@ import {
   handleSubmitSatisfaction,
   handleReopenGrievance,
 } from './grievance/handlers.js'
+import { sendOverdueRedirectReminders } from './grievance/service.js'
 import { handleListNotifications, handleMarkNotificationRead, handleMarkAllNotificationsRead } from './notificationHandlers.js'
 import { handleListDepartments, handleListCategories } from './referenceHandlers.js'
 import {
@@ -136,3 +137,16 @@ app.get('/api/admin/departments', adapt(handleListDepartmentsAdmin))
 app.patch('/api/admin/departments/:id', adapt(handleUpdateDepartmentHeadEmail))
 
 app.post('/api/upload', adapt(handleUploadAttachment))
+
+// Cron (invoked by Vercel Cron with an Authorization: Bearer $CRON_SECRET header)
+app.get('/api/cron/redirect-reminders', async (req, res) => {
+  if (!process.env.CRON_SECRET || req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+  try {
+    const result = await sendOverdueRedirectReminders()
+    res.json({ ok: true, ...result })
+  } catch (error) {
+    sendError(res, error)
+  }
+})

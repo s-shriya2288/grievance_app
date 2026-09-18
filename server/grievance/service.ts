@@ -3,9 +3,15 @@ import { AppError } from '../errors.js'
 import { logAudit } from '../audit.js'
 import { notifyUser } from '../notifications.js'
 import { sendEmail } from '../email.js'
-import { departmentRedirectTemplate } from '../email/templates.js'
+import { departmentRedirectTemplate, redirectDeadlineReminderTemplate } from '../email/templates.js'
 import type { CreateGrievanceInput, ListGrievancesQuery, UpdateGrievanceStatusInput } from './types.js'
 import type { Prisma } from '../../generated/prisma/client.js'
+
+const APP_URL = process.env.APP_URL || 'http://localhost:5173'
+
+function formatDeadline(date: Date): string {
+  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+}
 
 const fullInclude = {
   employee: { select: { id: true, firstName: true, lastName: true, employeeId: true, email: true } },
@@ -200,6 +206,8 @@ export async function updateGrievanceStatus(id: string, requester: RequesterCont
   if (targetDepartment) {
     data.department = { connect: { id: targetDepartment.id } }
     if (input.assignedAdminId === undefined) data.assignedAdmin = { disconnect: true }
+    data.redirectDeadline = input.redirectDeadline ? new Date(input.redirectDeadline) : null
+    data.redirectReminderSentAt = null
   }
 
   const updated = await prisma.grievance.update({ where: { id }, data, include: fullInclude })
@@ -218,11 +226,19 @@ export async function updateGrievanceStatus(id: string, requester: RequesterCont
   }
 
   if (targetDepartment) {
+    const deadlineText = updated.redirectDeadline ? formatDeadline(updated.redirectDeadline) : null
+    const noteText = input.redirectNote?.trim() || null
+    const viewUrl = `${APP_URL}/grievances/${id}`
+
+    const commentLines = [`🔀 Redirected to ${targetDepartment.departmentName} department.`]
+    if (noteText) commentLines.push(`Note: ${noteText}`)
+    if (deadlineText) commentLines.push(`Deadline: ${deadlineText}`)
+
     await prisma.grievanceComment.create({
       data: {
         grievanceId: id,
         userId: requester.userId,
-        comment: `🔀 Redirected to ${targetDepartment.departmentName} department.`,
+        comment: commentLines.join(' '),
       },
     })
     await logAudit({ userId: requester.userId, action: 'GRIEVANCE_REDIRECTED', entity: 'Grievance', entityId: id })
@@ -254,6 +270,9 @@ export async function updateGrievanceStatus(id: string, requester: RequesterCont
           ticketNumber: updated.ticketNumber,
           subject: updated.subject,
           departmentName: targetDepartment.departmentName,
+          viewUrl,
+          note: noteText,
+          deadline: deadlineText,
         }),
       })
     }
@@ -342,4 +361,57 @@ export async function reopenGrievance(grievanceId: string, employeeId: string) {
   }
 
   return updated
+}
+
+/**
+ * Runs on a daily schedule (Vercel Cron). Finds redirected grievances whose
+ * resolution deadline has passed without being Resolved/Closed, and reminds
+ * that department's management — never the employee who filed it.
+ */
+export async function sendOverdueRedirectReminders(): Promise<{ checked: number; remindersSent: number }> {
+  const now = new Date()
+  const overdue = await prisma.grievance.findMany({
+    where: {
+      redirectDeadline: { lt: now },
+      redirectReminderSentAt: null,
+      status: { notIn: ['Resolved', 'Closed'] },
+    },
+    include: { department: true },
+  })
+
+  for (const grievance of overdue) {
+    const viewUrl = `${APP_URL}/grievances/${grievance.id}`
+    const deadlineText = formatDeadline(grievance.redirectDeadline!)
+
+    const managementAdmins = await prisma.user.findMany({
+      where: { departmentId: grievance.departmentId, role: { roleName: { in: ['Department Admin', 'Super Admin'] } } },
+    })
+    await Promise.all(
+      managementAdmins.map((admin) =>
+        notifyUser(admin.id, {
+          title: `Overdue: Grievance ${grievance.ticketNumber}`,
+          message: `Past its resolution deadline of ${deadlineText} in the ${grievance.department.departmentName} department.`,
+          type: 'ReminderSent',
+        }),
+      ),
+    )
+
+    if (grievance.department.headEmail) {
+      await sendEmail({
+        to: grievance.department.headEmail,
+        subject: `Overdue: Grievance ${grievance.ticketNumber}`,
+        html: redirectDeadlineReminderTemplate({
+          ticketNumber: grievance.ticketNumber,
+          subject: grievance.subject,
+          departmentName: grievance.department.departmentName,
+          deadline: deadlineText,
+          viewUrl,
+        }),
+      })
+    }
+
+    await prisma.grievance.update({ where: { id: grievance.id }, data: { redirectReminderSentAt: now } })
+  }
+
+  return { checked: overdue.length, remindersSent: overdue.length }
 }

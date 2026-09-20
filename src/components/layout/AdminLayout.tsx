@@ -160,7 +160,8 @@ export default function AdminLayout() {
             </span>{' '}
             · {user?.role}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <img src="/brand/dalmia-logo-full.png" alt="Dalmia Bharat" className="hidden h-7 w-auto sm:block" />
             <button
               type="button"
               onClick={() => navigate('/admin/profile')}

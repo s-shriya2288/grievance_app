@@ -134,7 +134,8 @@ export default function Topbar() {
       <div className="hidden text-sm text-slate-500 dark:text-slate-400 md:block">
         Welcome back, <span className="font-medium text-slate-800 dark:text-slate-100">{user?.firstName} {user?.lastName}</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
+        <img src="/brand/dalmia-logo-full.png" alt="Dalmia Bharat" className="hidden h-7 w-auto sm:block" />
         <NotificationBell />
         <button
           type="button"

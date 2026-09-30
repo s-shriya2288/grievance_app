@@ -58,7 +58,7 @@ Treat harassment, safety, discrimination, and compliance/ethics matters as high 
 }
 
 function fallback(input: PrioritizeInput): PrioritizeResult {
-  const urgent = ['Harassment & Misconduct', 'Compliance & Ethics', 'Safety, Health & Environment (SHE)']
+  const urgent = ['Harassment & Misconduct', 'Compliance & Ethics', 'Safety, Health & Environment (EHS)']
   const priority = urgent.includes(input.category) ? 'High' : 'Medium'
   return {
     priority,

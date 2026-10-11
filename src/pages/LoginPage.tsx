@@ -234,13 +234,12 @@ export default function LoginPage() {
           <div className="flex flex-col items-center text-center">
             <CareHeartIcon />
             <h1 className="mt-2 text-3xl leading-none font-extrabold text-brand-700 dark:text-brand-300">
-              HR{' '}
               <span
                 style={{ fontFamily: 'var(--font-script)' }}
                 className="bg-gradient-to-r from-accent-green via-brand-600 to-accent-orange bg-clip-text text-4xl text-transparent"
               >
                 WeCare
-              </span>{' '}
+              </span>
               @RGP
             </h1>
             <p className="mt-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400">

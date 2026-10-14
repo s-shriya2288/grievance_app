@@ -245,7 +245,7 @@ export default function LoginPage() {
             <p className="mt-1.5 text-sm font-semibold text-brand-600 dark:text-brand-400">
               Employee Grievance Management Portal
             </p>
-            <p className="mt-0.5 text-xs font-medium tracking-wide text-accent-orange uppercase">A HR Initiative</p>
+            <p className="mt-0.5 text-xs font-medium tracking-wide text-accent-orange uppercase">An HR Initiative</p>
             <div className="mt-3 flex w-full items-center gap-3">
               <span className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
               <span className="text-accent-orange">♥</span>
